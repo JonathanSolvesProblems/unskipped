@@ -1,0 +1,12 @@
+{
+  "banned_words": ["unlock", "seamless", "empower", "insights", "biometric", "vitals", "stress level", "revolutionize", "game-changer"],
+  "banned_hex": ["#b23a26", "#f4efe6"],
+  "title_punctuation": "forbid",
+  "max_tracked_caps_rules": 0,
+  "allow_long_dashes": false,
+  "forbid_regex": [
+    {"pattern": "class=\"[^\"]*eyebrow", "why": "no eyebrow labels above titles"},
+    {"pattern": "Segoe Print|Bradley Hand|Comic Sans", "why": "no handwriting fonts"},
+    {"pattern": "box-shadow:[^;]*0 0 [0-9]+px [^;]*(pink|#ff4f93|#3db2ff|#ffe23d)", "why": "no glow"}
+  ]
+}
