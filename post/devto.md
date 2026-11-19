@@ -16,7 +16,7 @@ Elmore Leonard's tenth rule of writing is "Try to leave out the part that reader
 
 - **pink**: gripped (their pulse rose, or their blinking slowed down),
 - **yellow**: they smiled,
-- **blue**: they may have drifted (their blinking sped up, which is what blinks do when the mind wanders),
+- **blue**: they may have drifted (their blinking sped up: in a 2010 study at the University of Waterloo, readers blinked more when their minds wandered from the page),
 - **clear**: no reading. They looked away, talked, or the light was bad, and Unskipped says so instead of guessing.
 
 Before the reader sees a single flag, they mark the paragraphs that got them and lost them themselves. Then they review every note, drop any they don't want to share, and send a small file. The writer adds it to their own manuscript, and each note lands as a **Word comment on its paragraph**, signed with the reader's name. It opens in Word or Google Docs, where the writer already works.

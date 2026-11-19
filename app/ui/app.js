@@ -39,12 +39,12 @@ const S = { env: null, manuscript: null, session: null, t0: 0, live: null, unsub
 // own output as the hero object, composed in HTML. Labelled as a sample.
 function samplePage() {
   const paras = [
-    ['It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.', 'smile', 'got'],
+    ['It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.', 'smile', ''],
     ['However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered as the rightful property of some one or other of their daughters.', null, ''],
     ['“My dear Mr. Bennet,” said his lady to him one day, “have you heard that Netherfield Park is let at last?”', 'grip', ''],
     ['Mr. Bennet replied that he had not.', null, ''],
     ['“But it is,” returned she; “for Mrs. Long has just been here, and she told me all about it.”', null, ''],
-    ['Mr. Bennet made no answer.', 'drift', 'lost'],
+    ['Mr. Bennet made no answer.', 'drift', ''],
     ['“Do not you want to know who has taken it?” cried his wife impatiently.', 'none', ''],
   ];
   return `<figure class="sample" aria-label="A sample page with reader flags">
@@ -185,7 +185,7 @@ function paintRail() {
   if (ro) ro.innerHTML = `
     <span class="k">Pulse</span><b>${confident ? `${L.pulse.v.toFixed(0)}<small> bpm</small>` : '<small>settling</small>'}</b>
     <span class="k">Blinks</span><b>${t > 10000 ? `${blinksMin.toFixed(0)}<small> a min</small>` : '<small>counting</small>'}</b>
-    <span class="k">Smiling</span><b>${L.smile >= 50 ? 'yes' : 'no'}</b>`;
+    <span class="k">Smiling</span><b><small>${L.smile >= 50 ? 'yes' : 'no'}</small></b>`;
   const st = $('#status');
   if (st) st.innerHTML = `<span class="${L.code === 0 ? 'ok' : 'warn'}">${esc(HINTS[L.code] ?? L.hint ?? L.code)}</span><span>${L.fps} fps</span>`;
 }
@@ -312,14 +312,14 @@ function review(s, { replay = false } = {}) {
     <div class="verdict">
       <h1>${headline}</h1>
       <p class="base">Time on the page alone found ${gd.found}${gm.marked ? ` of ${gd.marked}` : ''}. ${g.refused.length ? `${g.refused.length} paragraph${g.refused.length > 1 ? 's' : ''} had no reading, and say so.` : 'Every paragraph had a reading.'} Read in ${minutes} minutes, face readable ${pct(scored.reader.readableShare)} of the time.</p>
-      <div class="edge" role="list" aria-label="The chapter's fore-edge: one slot per paragraph">
+      <div class="edge" role="list" aria-label="The chapter seen from its edge: each paragraph as wide as it is long">
         ${scored.paragraphs.map((n, i) => {
           const f = FLAG[n.camera];
           const mark = s.marks.got.includes(i) ? 'got' : s.marks.lost.includes(i) ? 'lost' : '';
-          return `<a role="listitem" href="#p${i}" class="slot ${mark}" data-i="${i}" title="Paragraph ${i + 1}${f ? `: ${MEANING[f]}` : ''}">${f ? `<span class="tip ${f}"></span>` : ''}</a>`;
+          return `<a role="listitem" href="#p${i}" class="slot ${mark}" style="flex-grow:${Math.max(8, s.paragraphs[i].words)}" data-i="${i}" title="Paragraph ${i + 1}${f ? `: ${MEANING[f]}` : ''}">${f ? `<span class="tip ${f}"></span>` : ''}</a>`;
         }).join('')}
       </div>
-      <p class="edge-key">The chapter from its edge: one slot per paragraph, a flag where the camera marked it, a pencil tick where you did.</p>
+      <p class="edge-key">The chapter seen from its edge, each paragraph as wide as it is long: a flag where the camera marked it, a pencil tick under the ones you marked.</p>
     </div>
     <article class="sheet annot" id="annot">
       ${scored.paragraphs.map((n, i) => {
