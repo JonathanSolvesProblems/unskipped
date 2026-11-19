@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   SmartSpectraSDK, CameraSelection, breathingMetrics, cardioMetrics, faceMetrics, decodeMetrics,
+  MetricType, SmartSpectraLogLevel,
 } from '@smartspectra/node-sdk';
 
 const cams = SmartSpectraSDK.availableCameras();
@@ -24,8 +25,17 @@ if (!cam) { console.error('No camera at index', idx); process.exit(1); }
 
 const sdk = new SmartSpectraSDK({
   apiKey: key,
-  requestedMetrics: [...breathingMetrics, ...cardioMetrics, ...faceMetrics],
+  // breathing needs the chest in view (validation code 7), which a reading posture at a laptop
+  // crops; METRICS=all brings it back
+  // the full cardio bundle delivered no cardio packets on 3.5.0 (SDK issue #18); PULSE_RATE
+  // alone is the reported workaround
+  requestedMetrics: process.env.METRICS === 'all'
+    ? [...breathingMetrics, ...cardioMetrics, ...faceMetrics]
+    : process.env.METRICS === 'cardio'
+      ? [...cardioMetrics, ...faceMetrics]
+      : [MetricType.PULSE_RATE, ...faceMetrics],
   enableTelemetry: false,
+  logLevel: SmartSpectraLogLevel.kInfo,
 });
 
 const t0 = Date.now();
