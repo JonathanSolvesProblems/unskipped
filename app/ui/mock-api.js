@@ -8,6 +8,21 @@ const ms = {
     return { text, words: text.split(' ').length };
   }),
 };
+// ?ms=<path to .md> swaps the placeholder for a real manuscript (same parse as src/manuscript.js),
+// used by tools/gallery.py for the marks screen once the graded reading is done.
+const msPath = new URLSearchParams(location.search).get('ms');
+if (msPath) {
+  const text = (await (await fetch(msPath, { cache: 'no-store' })).text()).replace(/\r/g, '');
+  const wc = (s) => (s.trim() ? s.trim().split(/\s+/).length : 0);
+  ms.paragraphs = [];
+  ms.byline = null;
+  for (const b of text.split(/\n\s*\n/).map((x) => x.replace(/\n/g, ' ').trim())) {
+    if (!b) continue;
+    if (/^#\s+/.test(b) && !ms.paragraphs.length) { ms.title = b.replace(/^#\s+/, ''); continue; }
+    if (/^_.*_$/.test(b) && !ms.paragraphs.length) { ms.byline = b.slice(1, -1); continue; }
+    ms.paragraphs.push({ text: b, words: wc(b) });
+  }
+}
 const handlers = {};
 let timer = null;
 let t0 = 0;

@@ -353,7 +353,9 @@ function review(s, { replay = false } = {}) {
     if (e.pulseDelta !== null && e.pulseDelta !== undefined) ev.push(Math.abs(e.pulseDelta) < 1 ? 'Pulse sat at your median.' : `Pulse ${e.pulseDelta > 0 ? 'rose' : 'fell'} ${Math.abs(e.pulseDelta)} bpm from your median.`);
     if (Number.isFinite(e.blinkRatio)) ev.push(`You blinked at ${Math.round(e.blinkRatio * 100)}% of your usual rate.`);
     if (e.smileMs) ev.push(`You smiled for ${(e.smileMs / 1000).toFixed(1)} seconds.`);
-    if (e.dwellRatio) ev.push(`You spent ${e.dwellRatio} times your usual time per word here.`);
+    if (e.dwellRatio) ev.push(Math.abs(e.dwellRatio - 1) < 0.15 ? 'You spent about your usual time per word here.'
+      : e.dwellRatio < 1 ? `You spent ${Math.round(e.dwellRatio * 100)}% of your usual time per word here.`
+      : `You spent ${e.dwellRatio.toFixed(1)} times your usual time per word here.`);
     const own = s.marks.got.includes(i) ? 'You marked it as got me.' : s.marks.lost.includes(i) ? 'You marked it as lost me.' : '';
     $('#note').innerHTML = `<h3>Paragraph ${i + 1}${kept.has(i) ? '' : ', dropped from what you send'}</h3><p>${esc(commentFor(n, name) || 'Nothing to say about this one.')}</p>
       <p class="ev">${esc([...ev, own].filter(Boolean).join(' '))}</p>
