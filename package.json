@@ -1,0 +1,21 @@
+{
+  "name": "unskipped",
+  "version": "0.1.0",
+  "description": "Your beta reader's face and pulse leave margin notes in your manuscript. Built on the Presage SmartSpectra SDK.",
+  "license": "MIT",
+  "type": "module",
+  "main": "app/main.js",
+  "scripts": {
+    "start": "electron .",
+    "camtest": "node tools/camtest.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@smartspectra/node-sdk": "^3.5.0",
+    "docx": "^9.16.0",
+    "jszip": "^3.10.2"
+  },
+  "devDependencies": {
+    "electron": "^33.4.11"
+  }
+}
