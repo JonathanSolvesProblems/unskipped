@@ -22,6 +22,21 @@ Answered with a reason, not changed:
 - The Elmore Leonard pull-quote: kept, it is the product's reason to exist and the page's outside voice; date dropped from the home screen.
 - Text left, object right on the home: kept, but the object is now the product's output rather than an illustration.
 
-## Round 2
+## Round 2 (fresh blind critic, round 6 shots)
 
-(pending)
+Score: **7/10**, not done by this skill's bar (3 or less).
+
+Fixed after it:
+- Logo flag overlapping "ed" (read as a bug): the flag now sits clear of the word, with a fold shade.
+- Stray graphite marks on the sample page: removed.
+- Hero flag clipped at the window edge: the sample page sits further in.
+- Fore-edge strip as 29 identical squares: now one continuous edge of stacked leaves, each paragraph as wide as it is long.
+- "no" set at display size in the read rail: small text.
+- Left edges wandering between screens: one 1180 px content width for the bar and every screen.
+- Flag film end flattened into a two-tone chip: tinted gradient, cut edge and adhesive line.
+
+Not done, with reasons (time-boxed at T-3 days; the build, the measurement and the post come first):
+- Replace native checkbox, select and input, and the circled stepper, with drawn equivalents.
+- Re-pick flag inks from photographed real flags (no usable reference photos: Wikimedia returned national flags, then rate-limited).
+- Signals written into the page margin instead of a rail.
+- A third blind round. To run once the real graded session replaces the placeholder text, with the real review screen as the frame that matters.
