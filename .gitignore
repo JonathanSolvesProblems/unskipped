@@ -1,0 +1,9 @@
+node_modules/
+.env
+*.local.json
+tmp/
+out/
+dist/
+# raw camera recordings never go in the repo
+*.mp4
+*.webm
