@@ -3,7 +3,9 @@ import { grade } from '../../src/grade.js';
 
 // In the desktop app the preload exposes window.unskipped. On the static replay page it is
 // absent, and the page replays a recorded reading instead (no camera, no key).
-const api = window.unskipped || null;
+const params = new URLSearchParams(location.search);
+let api = window.unskipped || null;
+if (!api && params.get('mock')) api = (await import('./mock-api.js')).api; // dev-only layout review
 const REPLAY = !api;
 
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -15,7 +17,7 @@ const ART = 'art/';
 const STEPS = ['Consent', 'Settle', 'Read', 'Your marks', 'Review'];
 function crumbs(on) {
   const k = STEPS.indexOf(on);
-  $('#crumbs').innerHTML = on ? STEPS.map((s, i) => `<span class="${i === k ? 'on' : i < k ? 'done' : ''}" ${i === k ? 'aria-current="step"' : ''}>${s}</span>`).join('') : '';
+  $('#crumbs').innerHTML = on ? STEPS.map((s, i) => `<span class="${i === k ? 'on' : i < k ? 'done' : ''}" ${i === k ? 'aria-current="step"' : ''}><i>${i + 1}</i>${s}</span>`).join('') : '';
 }
 function toast(msg, ms = 2800) {
   const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
@@ -32,34 +34,47 @@ const MEANING = { grip: 'Gripped: pulse up, or blinking slowed', smile: 'Smiled'
 // ---------------------------------------------------------------- state
 const S = { env: null, manuscript: null, session: null, t0: 0, live: null, unsub: [], readings: [] };
 
+// ---------------------------------------------------------------- the sample page (home hero)
+// A real typeset page (Austen, 1813, public domain) with flags on its fore-edge: the product's
+// own output as the hero object, composed in HTML. Labelled as a sample.
+function samplePage() {
+  const paras = [
+    ['It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.', 'smile', 'got'],
+    ['However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered as the rightful property of some one or other of their daughters.', null, ''],
+    ['“My dear Mr. Bennet,” said his lady to him one day, “have you heard that Netherfield Park is let at last?”', 'grip', ''],
+    ['Mr. Bennet replied that he had not.', null, ''],
+    ['“But it is,” returned she; “for Mrs. Long has just been here, and she told me all about it.”', null, ''],
+    ['Mr. Bennet made no answer.', 'drift', 'lost'],
+    ['“Do not you want to know who has taken it?” cried his wife impatiently.', 'none', ''],
+  ];
+  return `<figure class="sample" aria-label="A sample page with reader flags">
+    <div class="sheet sample-page">
+      ${paras.map(([t, f, m]) => `<p class="${m}">${t}${f ? `<span class="flag ${f}" aria-hidden="true"></span>` : ''}</p>`).join('')}
+    </div>
+    <figcaption><span>A sample page, flagged:</span><span><i class="swatch grip"></i>gripped</span><span><i class="swatch smile"></i>smiled</span><span><i class="swatch drift"></i>drifted</span><span><i class="swatch none"></i>no reading</span></figcaption>
+  </figure>`;
+}
+
 // ---------------------------------------------------------------- home
 async function home() {
   crumbs(null); readline.hidden = true;
   S.env = await api.invoke('env:info');
   view.innerHTML = `
   <section class="home">
-    <div>
-      <h1>Find out where your reader stopped caring</h1>
-      <p class="lede">A reader who agrees to it reads your chapter in front of their laptop camera. Presage SmartSpectra reads their pulse, blinks and smiles on that laptop, paragraph by paragraph, and every paragraph that moved them, or lost them, comes back to you flagged in the margin of your own manuscript.</p>
-      <p class="quote">"Try to leave out the part that readers tend to skip." Elmore Leonard, The New York Times, 2001</p>
-      <div class="paths">
-        <div class="slip path">
-          <h2>I'm reading</h2>
-          <p>Open the chapter the writer sent you. You see what is measured before the camera turns on, and you approve every note before anything is sent.</p>
-          <button class="btn" id="read">Open a chapter</button>
-          ${S.env.hasKey ? '' : '<p class="small error" style="margin:12px 0 0">No Presage API key found. Add PRESAGE_API_KEY to .env to read live.</p>'}
-        </div>
-        <div class="slip path">
-          <h2>I'm the writer</h2>
-          <p>Add your readers' files to your manuscript. Each note lands as a Word comment on its paragraph, signed with the reader's name.</p>
-          <button class="btn quiet" id="write">Add readings</button>
-        </div>
+    <div class="home-copy">
+      <h1>See where your reader stopped caring</h1>
+      <p class="lede">Your beta reader reads the chapter with their camera on. Their pulse, blinks and smiles leave a flag on every paragraph that moved them or lost them, and the flags come back to you as comments in your own manuscript.</p>
+      <p class="quote">“Try to leave out the part that readers tend to skip.” Elmore&nbsp;Leonard</p>
+      <div class="row">
+        <button class="btn paper" id="read">Open a chapter to read</button>
+        <button class="link" id="write">I’m the writer: add readings to my manuscript</button>
       </div>
+      ${S.env.hasKey ? '' : '<p class="notice">Live reading needs a Presage key in <code>.env</code>. The README says how.</p>'}
     </div>
-    <div class="art"><img src="${ART}hero.png" alt="A closed hardback book on green cloth with pink, yellow and blue page flags fanned out of its edge"></div>
+    ${samplePage()}
     <footer class="foot">
-      <span>SmartSpectra SDK ${esc(S.env.sdk)} · camera: ${S.env.cameras.map((c) => esc(c.name)).join(', ') || 'none found'}</span>
-      <span>Made by Jonathan Andrei for writers who keep hearing "loved it." More of what I build at <a href="https://jonathansolvesproblems.com" id="site">jonathansolvesproblems.com</a></span>
+      <span>Measured on the reader’s laptop by Presage SmartSpectra. No video leaves it.</span>
+      <span>Made by Jonathan Andrei for writers who keep hearing “loved it.” More of what I build at <a href="https://jonathansolvesproblems.com" id="site">jonathansolvesproblems.com</a></span>
     </footer>
   </section>`;
   $('#read').onclick = async () => { const r = await api.invoke('manuscript:open'); if (r) { S.manuscript = r; consent(); } };
@@ -74,28 +89,25 @@ function consent() {
   const cams = S.env.cameras;
   const minutes = Math.max(1, Math.round(ms.paragraphs.reduce((a, p) => a + p.words, 0) / 230));
   view.innerHTML = `
-  <section class="consent-wrap">
-    <div class="sheet consent">
+  <section class="sheet consent">
+    <div>
       <h1>Before the camera turns on</h1>
       <p class="lede">You are about to read <em>${esc(ms.title)}</em>, ${ms.paragraphs.length} paragraphs, about ${minutes} minutes.</p>
       <dl>
-        <dt>What is read</dt><dd>Your pulse rate, your blinks, your smiles, whether you are talking, and whether your face is turned to the page. Presage SmartSpectra works these out from the camera image.</dd>
-        <dt>Where</dt><dd>On this computer. No video or picture is recorded or sent anywhere. The SDK contacts Presage only to check the API key and count usage.</dd>
-        <dt>SDK telemetry</dt><dd>Off. Unskipped starts the SDK with telemetry disabled.</dd>
-        <dt>What the writer gets</dt><dd>Only the notes you keep on the last screen, one per paragraph, with your name. You can keep none.</dd>
-        <dt>Your own marks</dt><dd>When you finish, you mark the paragraphs that got you and lost you yourself, before you see anything the camera noticed.</dd>
-        <dt>Stopping</dt><dd>Press Stop at any time. Closing the window turns the camera off.</dd>
-        <dt>Not about health</dt><dd>These readings describe how you read one piece. They say nothing about your health.</dd>
+        <dt>What is read</dt><dd>Your pulse, blinks and smiles, whether you are talking, and whether your face is turned to the page. Presage SmartSpectra works these out from the camera picture.</dd>
+        <dt>Where</dt><dd>On this computer. No video or picture is recorded or sent. The SDK contacts Presage only to check the key and count usage. Its telemetry is switched off.</dd>
+        <dt>What the writer gets</dt><dd>Only the notes you keep at the end, with your name. You can keep none.</dd>
+        <dt>Your own marks</dt><dd>You mark what got you and lost you before you see any flag.</dd>
+        <dt>Not about health</dt><dd>The readings describe how you read one piece, nothing about your health. Stop at any time; closing the window turns the camera off.</dd>
       </dl>
-      <label class="agree"><input type="checkbox" id="ok"> I agree to be measured while I read this piece</label>
-      <div class="fields">
-        <label>Your name, as the writer will see it <input type="text" id="name" value="Reader"></label>
-        <label>Camera <select id="cam">${cams.map((c, i) => `<option value="${i}">${esc(c.name)}</option>`).join('')}</select></label>
-      </div>
-      <div class="row"><button class="btn" id="go" disabled>Turn on the camera</button><button class="btn quiet" id="back">Not now</button></div>
     </div>
-    <aside class="side-art"><img src="${ART}settle.png" alt="Reading glasses resting on an open paperback">
-      <p>Nothing is measured until you press Start reading on the next screen, and nothing leaves this laptop until you press Send.</p></aside>
+    <div class="consent-act">
+      <label class="agree"><input type="checkbox" id="ok"> I agree to be measured while I read this piece</label>
+      <label class="field">Your name, as the writer will see it <input type="text" id="name" value="Reader"></label>
+      <label class="field">Camera <select id="cam">${cams.map((c, i) => `<option value="${i}">${esc(c.name)}</option>`).join('')}</select></label>
+      <div class="row"><button class="btn" id="go" disabled>Turn on the camera</button><button class="btn quiet" id="back">Not now</button></div>
+      <p class="small">Nothing is measured until you press Start reading, and nothing leaves this laptop until you press Send.</p>
+    </div>
   </section>`;
   $('#ok').onchange = (e) => { $('#go').disabled = !e.target.checked || !S.env.hasKey || !cams.length; };
   $('#back').onclick = home;
@@ -158,10 +170,10 @@ const HINTS = { 0: 'Good picture', 1: 'No face found', 2: 'More than one face', 
 
 function railHtml() {
   return `<aside class="rail">
-    <div class="slip"><canvas id="preview" width="192" height="108" aria-label="Live camera preview"></canvas>
-      <p class="small" style="margin:8px 0 0">Live camera, on this laptop only. Not recorded.</p></div>
-    <div class="slip"><div class="readout" id="readout"></div><svg class="spark" id="spark" viewBox="0 0 100 38" preserveAspectRatio="none" aria-hidden="true"></svg></div>
-    <div class="slip state" id="status" role="status"></div>
+    <canvas id="preview" width="192" height="108" aria-label="Live camera preview, not recorded"></canvas>
+    <div class="state" id="status" role="status"></div>
+    <div class="readout" id="readout"></div>
+    <p class="rail-note">Live camera, on this laptop only. Not recorded.</p>
   </aside>`;
 }
 function paintRail() {
@@ -171,18 +183,11 @@ function paintRail() {
   const confident = L.pulse && (L.pulse.c ?? 0) >= 40;
   const ro = $('#readout');
   if (ro) ro.innerHTML = `
-    <span class="dot grip"></span><span class="k">Pulse</span><b>${confident ? L.pulse.v.toFixed(0) : '<span class="small">settling</span>'}</b>
-    <span class="dot"></span><span class="k">Blinks a minute</span><b>${t > 10000 ? blinksMin.toFixed(0) : '<span class="small">…</span>'}</b>
-    <span class="dot smile"></span><span class="k">Smiling</span><b>${L.smile >= 50 ? 'yes' : 'no'}</b>`;
-  const sp = $('#spark');
-  if (sp && L.pulseHist.length > 1) {
-    const h = L.pulseHist.filter(([tt]) => tt > t - 90000);
-    const vs = h.map((x) => x[1]); const lo = Math.min(...vs) - 2, hi = Math.max(...vs) + 2;
-    const pts = h.map(([tt, v]) => `${(100 * (tt - (t - 90000)) / 90000).toFixed(1)},${(38 - 38 * (v - lo) / (hi - lo)).toFixed(1)}`).join(' ');
-    sp.innerHTML = `<polyline points="${pts}" fill="none" stroke="#1a1f1c" stroke-width="1.3" vector-effect="non-scaling-stroke"/>`;
-  }
+    <span class="k">Pulse</span><b>${confident ? `${L.pulse.v.toFixed(0)}<small> bpm</small>` : '<small>settling</small>'}</b>
+    <span class="k">Blinks</span><b>${t > 10000 ? `${blinksMin.toFixed(0)}<small> a min</small>` : '<small>counting</small>'}</b>
+    <span class="k">Smiling</span><b>${L.smile >= 50 ? 'yes' : 'no'}</b>`;
   const st = $('#status');
-  if (st) st.innerHTML = `<span class="${L.code === 0 ? 'ok' : 'warn'}">${esc(HINTS[L.code] ?? L.hint ?? L.code)}</span><span class="small">${L.fps} fps</span>`;
+  if (st) st.innerHTML = `<span class="${L.code === 0 ? 'ok' : 'warn'}">${esc(HINTS[L.code] ?? L.hint ?? L.code)}</span><span>${L.fps} fps</span>`;
 }
 
 // ---------------------------------------------------------------- settle
@@ -233,9 +238,16 @@ function read() {
     if (pick !== current && pick >= 0) {
       if (current >= 0) paras[current].classList.remove('focus');
       paras[pick].classList.add('focus'); current = pick;
+      paras[pick].append(liveFlag);
       s.timeline.push({ t: now(), p: pick });
     }
   };
+  // the clear film flag that rides on the fore-edge beside the paragraph being read
+  const liveFlag = document.createElement('span');
+  liveFlag.className = 'flag none live'; liveFlag.setAttribute('aria-hidden', 'true');
+  const page = $('#page');
+  const placeLine = () => { const r = page.getBoundingClientRect(); readline.style.left = `${r.left}px`; readline.style.width = `${r.width}px`; };
+  placeLine(); window.onresize = placeLine;
   track();
   window.onscroll = track;
   S.focusTimer = setInterval(track, 250);
@@ -300,18 +312,26 @@ function review(s, { replay = false } = {}) {
     <div class="verdict">
       <h1>${headline}</h1>
       <p class="base">Time on the page alone found ${gd.found}${gm.marked ? ` of ${gd.marked}` : ''}. ${g.refused.length ? `${g.refused.length} paragraph${g.refused.length > 1 ? 's' : ''} had no reading, and say so.` : 'Every paragraph had a reading.'} Read in ${minutes} minutes, face readable ${pct(scored.reader.readableShare)} of the time.</p>
+      <div class="edge" role="list" aria-label="The chapter's fore-edge: one slot per paragraph">
+        ${scored.paragraphs.map((n, i) => {
+          const f = FLAG[n.camera];
+          const mark = s.marks.got.includes(i) ? 'got' : s.marks.lost.includes(i) ? 'lost' : '';
+          return `<a role="listitem" href="#p${i}" class="slot ${mark}" data-i="${i}" title="Paragraph ${i + 1}${f ? `: ${MEANING[f]}` : ''}">${f ? `<span class="tip ${f}"></span>` : ''}</a>`;
+        }).join('')}
+      </div>
+      <p class="edge-key">The chapter from its edge: one slot per paragraph, a flag where the camera marked it, a pencil tick where you did.</p>
     </div>
     <article class="sheet annot" id="annot">
       ${scored.paragraphs.map((n, i) => {
         const f = FLAG[n.camera];
         const mark = s.marks.got.includes(i) ? 'got' : s.marks.lost.includes(i) ? 'lost' : '';
-        return `<div class="para ${mark}" data-i="${i}">${esc(s.paragraphs[i].text)}${f ? `<button class="flag ${f}" style="--k:${i}" data-i="${i}" aria-pressed="true" aria-label="${esc(MEANING[f])}. ${replay ? 'Show note' : 'Show note; press again to drop it'}"></button>` : ''}</div>`;
+        return `<div class="para ${mark}" data-i="${i}" id="p${i}">${esc(s.paragraphs[i].text)}${f ? `<button class="flag ${f}" style="--k:${i}" data-i="${i}" aria-pressed="true" aria-label="${esc(MEANING[f])}. ${replay ? 'Show note' : 'Show note; press again to drop it'}"></button>` : ''}</div>`;
       }).join('')}
     </article>
     <aside class="notes">
       <div class="legend">
-        ${['grip', 'smile', 'drift', 'none'].map((f) => `<div><span class="flag mini ${f}"></span>${MEANING[f]}</div>`).join('')}
-        <div><span style="display:inline-block;width:30px;margin-right:8px;border-left:3px solid var(--cloth-mute);height:12px;vertical-align:-1px"></span>Your own marks</div>
+        ${['grip', 'smile', 'drift', 'none'].map((f) => `<div><span class="swatch ${f}"></span>${MEANING[f]}</div>`).join('')}
+        <div><span class="swatch pencil"></span>Your own marks, in pencil on the left</div>
       </div>
       <div class="slip note-slip" id="note"><h3>Select a flag</h3><p class="small">Each flag says what the camera saw on that paragraph and how sure it was.</p></div>
       ${replay ? `<div class="slip"><p style="margin:0;font-size:14px;line-height:1.5">This is a recorded reading, replayed from its session file: the same scoring code, no camera and no key. The live app runs on the desktop with a SmartSpectra key.</p></div>` : `
@@ -327,16 +347,15 @@ function review(s, { replay = false } = {}) {
     view.querySelectorAll('.annot .para.sel').forEach((el) => el.classList.remove('sel'));
     view.querySelector(`.annot .para[data-i="${i}"]`)?.classList.add('sel');
     const e = n.evidence || {};
-    const ev = [
-      e.pulseDelta === null || e.pulseDelta === undefined ? null
-        : Math.abs(e.pulseDelta) < 1 ? 'pulse at your median' : `pulse ${e.pulseDelta > 0 ? '+' : ''}${e.pulseDelta} bpm against your median`,
-      Number.isFinite(e.blinkRatio) ? `blinking at ${Math.round(e.blinkRatio * 100)}% of your usual rate` : null,
-      e.smileMs ? `smiling ${(e.smileMs / 1000).toFixed(1)} s` : null,
-      e.dwellRatio ? `time on the page ${e.dwellRatio}x your usual` : null,
-    ].filter(Boolean);
-    const own = s.marks.got.includes(i) ? 'You marked it got me.' : s.marks.lost.includes(i) ? 'You marked it lost me.' : '';
-    $('#note').innerHTML = `<h3>Paragraph ${i + 1}${kept.has(i) ? '' : ', dropped'}</h3><p>${esc(commentFor(n, name) || 'Nothing to say about this one.')}</p>
-      <p class="ev">${esc(ev.join(' · '))}${own ? `<br>${own}` : ''}</p>`;
+    const ev = [];
+    if (e.pulseDelta !== null && e.pulseDelta !== undefined) ev.push(Math.abs(e.pulseDelta) < 1 ? 'Pulse sat at your median.' : `Pulse ${e.pulseDelta > 0 ? 'rose' : 'fell'} ${Math.abs(e.pulseDelta)} bpm from your median.`);
+    if (Number.isFinite(e.blinkRatio)) ev.push(`You blinked at ${Math.round(e.blinkRatio * 100)}% of your usual rate.`);
+    if (e.smileMs) ev.push(`You smiled for ${(e.smileMs / 1000).toFixed(1)} seconds.`);
+    if (e.dwellRatio) ev.push(`You spent ${e.dwellRatio} times your usual time per word here.`);
+    const own = s.marks.got.includes(i) ? 'You marked it as got me.' : s.marks.lost.includes(i) ? 'You marked it as lost me.' : '';
+    $('#note').innerHTML = `<h3>Paragraph ${i + 1}${kept.has(i) ? '' : ', dropped from what you send'}</h3><p>${esc(commentFor(n, name) || 'Nothing to say about this one.')}</p>
+      <p class="ev">${esc([...ev, own].filter(Boolean).join(' '))}</p>
+      ${replay ? '' : '<p class="ev">Click the flag again to drop this note, or to keep it.</p>'}`;
   };
   view.querySelectorAll('.annot .flag').forEach((b) => {
     b.onclick = () => {
@@ -351,6 +370,9 @@ function review(s, { replay = false } = {}) {
     };
   });
   view.querySelectorAll('.annot .para').forEach((p) => { p.onclick = (e) => { if (!e.target.closest('.flag')) showNote(Number(p.dataset.i)); }; });
+  view.querySelectorAll('.edge .slot').forEach((a) => {
+    a.onclick = (e) => { e.preventDefault(); const i = Number(a.dataset.i); document.getElementById(`p${i}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); showNote(i); };
+  });
   const first = scored.paragraphs.find((n) => FLAG[n.camera] && n.camera !== 'no-reading');
   if (first) showNote(first.i);
   if (replay) return;
@@ -431,4 +453,16 @@ async function replayBoot() {
   }
 }
 
-if (REPLAY) replayBoot(); else home();
+if (REPLAY) replayBoot();
+else if (params.get('screen')) {
+  // dev-only: jump to a screen for layout review (?mock=1&screen=consent|settle|read|marks)
+  await home();
+  const go = params.get('screen');
+  S.manuscript = await api.invoke('manuscript:open');
+  consent();
+  if (go !== 'consent') {
+    $('#ok').checked = true; $('#ok').onchange({ target: $('#ok') }); await $('#go').onclick();
+    if (go === 'read' || go === 'marks') { await new Promise((r) => setTimeout(r, 3500)); read(); }
+    if (go === 'marks') { await new Promise((r) => setTimeout(r, 1500)); $('#done').onclick(); }
+  }
+} else home();

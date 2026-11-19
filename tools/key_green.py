@@ -12,6 +12,8 @@ from PIL import Image, ImageFilter
 
 src, dst = sys.argv[1], sys.argv[2]
 im = Image.open(src).convert("RGBA")
+if len(sys.argv) > 3:  # optional crop box "x0,y0,x1,y1" applied to the raw image first
+    im = im.crop(tuple(int(v) for v in sys.argv[3].split(",")))
 w, h = im.size
 px = im.load()
 alpha = Image.new("L", (w, h), 255)
@@ -21,7 +23,9 @@ for y in range(h):
         r, g, b, _ = px[x, y]
         hh, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
         deg = hh * 360
-        if 95 <= deg <= 150 and s > 0.45 and v > 0.30:
+        if 95 <= deg <= 150 and s > 0.2 and v > 0.7 and s <= 0.45:
+            ap[x, y] = 0  # washed-out backdrop corner (the generator's light falloff)
+        elif 95 <= deg <= 150 and s > 0.45 and v > 0.30:
             # fully key the clear backdrop; ramp near the thresholds to avoid a hard fringe.
             # The shadow on the backdrop is a darker saturated green: keyed to a soft partial
             # alpha so it reads as a shadow on whatever cloth sits behind.
