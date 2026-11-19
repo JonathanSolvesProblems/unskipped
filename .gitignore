@@ -7,3 +7,10 @@ dist/
 # raw camera recordings never go in the repo
 *.mp4
 *.webm
+
+# design working files: reference photos and raw generator output stay local
+.design/refs/
+.design/shots/
+.design/brand/art/*.raw.png
+.design/brand/art/*.png
+!.design/brand/art/*.webp
