@@ -21,3 +21,7 @@ Same story, first 12 paragraphs, read again with planted actions. Each planted p
 | 11 | Read normally (harmless control) | not "no reading" |
 
 Pass: all three planted paragraphs refused with the right reason, and both harmless paragraphs given a reading. Misses are published in the post and fixed, not hidden.
+
+## Changes after this file was first committed
+
+- 19 November 2026, before the graded read: a paragraph read cleanly but for under 3 s (a short line of dialogue) is now "brief" with no flag, instead of "no reading: too short to read a signal". Reason: in a layout check, the short dialogue lines of the story filled the page with "no reading" flags that were not refusals. The "no reading" refusal (most of the paragraph's time without a readable face) and every threshold value are unchanged. Planted controls are unaffected: each planted action lasts a whole paragraph.

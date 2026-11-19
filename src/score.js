@@ -164,13 +164,17 @@ export function scoreSession(session, th = THRESHOLDS) {
 
     if (p.dwellMs === 0) { out.camera = 'unseen'; out.reason = 'never on the reading line'; return out; }
     const invalidMs = p.dwellMs - p.validMs;
-    if (p.validMs < th.minValidMs || p.validMs / p.dwellMs < th.minValidShare) {
+    // A paragraph read cleanly but too briefly for a signal (a short line of dialogue) gets no
+    // flag: nothing went wrong, there is just nothing to say. "No reading" is kept for paragraphs
+    // where the camera could not see a reading face for most of the time.
+    if (p.validMs / p.dwellMs < th.minValidShare) {
       out.camera = 'no-reading';
       const worst = [['awayMs', 'you looked away'], ['talkMs', 'you were talking'], ['darkMs', 'the light was too poor'], ['movingMs', 'you moved out of position']]
         .sort((a, b) => p[b[0]] - p[a[0]])[0];
-      out.reason = invalidMs > 0 ? worst[1] : 'too short to read a signal';
+      out.reason = worst[1];
       return out;
     }
+    if (p.validMs < th.minValidMs) { out.camera = 'brief'; out.reason = 'too brief to read a signal'; return out; }
 
     const blinkRate = p.blinks / (p.validMs / 60000);
     const blinkRatio = Number.isFinite(blinkPerMin) && blinkPerMin > 0 ? blinkRate / blinkPerMin : NaN;

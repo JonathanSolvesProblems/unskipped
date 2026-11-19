@@ -1,0 +1,25 @@
+{
+  "ai_generated": true,
+  "provider": "local",
+  "model": "flux-2-klein-base-4b-fp8.safetensors",
+  "subject": "a small fan of unused translucent page flags in pink, yellow, blue and clear film, still on their paper backing",
+  "references": [],
+  "transparent": true,
+  "lock_palette": null,
+  "direction_file": ".design/brand/art-direction.md",
+  "prompt": "a small fan of unused translucent page flags in pink, yellow, blue and clear film, still on their paper backing. Cut paper and translucent film still life, photographed flat from directly above. Matte cool white paper with a faint fibre texture, crisp cut edges, tiny soft shadows where layers overlap. Dark bottle green book cloth with a visible woven texture as the only background colour. Translucent fluorescent film page flags in hot pink, lemon yellow and sky blue, slightly glossy, the clear end of each flag see-through. One soft daylight source from the top left. Calm, tidy, generous empty space. One subject, centred, a slight tilt. Isolated on a plain flat solid pure green #00FF00 background, nothing else behind it.",
+  "date": "2026-11-19T11:05:27",
+  "runner": "ComfyUI",
+  "mode": "klein-base",
+  "text_encoder": "qwen_3_4b_fp8_mixed.safetensors",
+  "vae": "flux2-vae.safetensors",
+  "seed": 53,
+  "steps": 20,
+  "cfg": 4.0,
+  "negative": "text, letters, numbers, words, logos, people, faces, hands, hearts, heart icons, pulse lines, glow, neon, 3D render, plastic toy look, isometric, purple, gradients, vignette, cream, orange., text, letters, numbers, words, caption, logo, watermark, signature, border, frame",
+  "size": [
+    1024,
+    1024
+  ],
+  "seconds": 47.1
+}
