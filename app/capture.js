@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  SmartSpectraSDK, CameraSelection, breathingMetrics, cardioMetrics, faceMetrics, decodeMetrics,
+  SmartSpectraSDK, CameraSelection, MetricType, faceMetrics, decodeMetrics,
 } from '@smartspectra/node-sdk';
 import { compactSample } from '../src/signals.js';
 
@@ -27,9 +27,10 @@ export function startCapture(o) {
   t0 = Date.now(); frames = 0; rawKept = 0;
   sdk = new SmartSpectraSDK({
     apiKey: o.apiKey,
-    // full face bundle; cardio requested by metric rather than bundle (issue #18 workaround is
-    // to drop to PULSE_RATE alone if usage checks fail; see README)
-    requestedMetrics: [...breathingMetrics, ...cardioMetrics, ...faceMetrics],
+    // Measured on 19 Nov 2026 (tools/camtest.js, results/sdk-notes.md): with the cardio bundle
+    // no cardio packet ever arrived (SDK issue #18); PULSE_RATE alone delivered pulse from ~16 s
+    // of valid frames. Breathing is left out: its chest check broke the frame for a reader at a laptop.
+    requestedMetrics: [MetricType.PULSE_RATE, ...faceMetrics],
     enableTelemetry: false,
   });
   const now = () => Date.now() - t0;

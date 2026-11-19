@@ -190,8 +190,9 @@ function settle() {
   crumbs('Settle'); readline.hidden = true;
   view.innerHTML = `<div class="reading">
     <div class="page" style="padding-bottom:56px">
-      <h1>Sit the way you read</h1>
-      <p>Face the screen, light in front of you, not behind. The first pulse reading takes about fifteen seconds.
+      <h1>Sit where the camera sees your face and the top of your chest</h1>
+      <p>Sit back a little, so the preview shows you down to the collarbones. Face the screen, light in front of you,
+      not behind. Your first pulse reading comes after about fifteen seconds of a steady picture.
       Reading starts when you press the button; nothing before that counts.</p>
       <p class="muted" id="settleMsg">Waiting for a steady pulse…</p>
       <div class="row"><button class="btn pencil" id="start" disabled>Start reading</button><button class="btn ghost" id="stop">Stop</button></div>
