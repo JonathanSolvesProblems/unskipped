@@ -14,3 +14,6 @@ dist/
 .design/brand/art/*.raw.png
 .design/brand/art/*.png
 !.design/brand/art/*.webp
+
+# private hackathon card (read by the local commit hook, never published)
+PHASE0.md
