@@ -12,7 +12,7 @@ const handlers = {};
 let timer = null;
 let t0 = 0;
 export const api = {
-  async invoke(ch) {
+  async invoke(ch, p) {
     switch (ch) {
       case 'env:info': return { hasKey: true, cameras: [{ id: 'mock', name: 'Laptop camera' }], sdk: '3.5.0' };
       case 'manuscript:open': return { path: 'layout-check.md', ms };
@@ -27,6 +27,11 @@ export const api = {
         return { t0 };
       }
       case 'capture:stop': clearInterval(timer); return null;
+      // file paths, recorded on window for the end-to-end tests
+      case 'file:save-json': window.__saved = JSON.parse(p.json); return `readings/${p.suggested}`;
+      case 'file:open-json': return window.__saved ? [{ path: 'readings/mock.reading.json', data: window.__saved }] : [];
+      case 'docx:export': window.__exported = p; return 'layout-check (reader notes).docx';
+      case 'session:backup': window.__backups = (window.__backups || 0) + 1; return null;
       default: return null;
     }
   },

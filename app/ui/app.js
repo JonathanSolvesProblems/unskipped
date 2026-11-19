@@ -306,7 +306,9 @@ function review(s, { replay = false } = {}) {
   const minutes = ((s.readEnd - s.readStart) / 60000).toFixed(1);
   const gm = g.camera.got, gd = g.dwell.got;
   const headline = gm.marked
-    ? `Of the <span class="n">${gm.marked}</span> paragraphs you marked as got me, the camera flagged <span class="n">${gm.found}</span>`
+    ? (gm.marked === 1
+      ? `You marked <span class="n">1</span> paragraph as got me, and the camera ${gm.found ? 'flagged it too' : 'did not flag it'}`
+      : `Of the <span class="n">${gm.marked}</span> paragraphs you marked as got me, the camera flagged <span class="n">${gm.found}</span>`)
     : 'You marked nothing as got me. Here is what the camera noticed';
   view.innerHTML = `<section class="review">
     <div class="verdict">
@@ -444,13 +446,32 @@ function writer() {
 // ---------------------------------------------------------------- replay (static page, no camera, no key)
 async function replayBoot() {
   const src = new URLSearchParams(location.search).get('session') || '../../results/sessions/graded.json';
-  try {
-    const data = await (await fetch(src)).json();
-    const s = data.raw ? { ...data.raw, reader: data.reader, marks: data.marks || data.raw.marks } : data;
-    review(s, { replay: true });
-  } catch (e) {
-    view.innerHTML = `<section class="writer"><h1 style="color:var(--cloth-ink)">No recorded reading here yet</h1><p class="lede">${esc(e.message)}</p></section>`;
+  const empty = (title, line) => {
+    view.innerHTML = `<section class="home empty">
+      <div class="home-copy">
+        <h1>${esc(title)}</h1>
+        <p class="lede">${line}</p>
+        <div class="row"><a class="btn paper" href="https://github.com/JonathanSolvesProblems/unskipped">See the code and how to run it</a></div>
+      </div>
+      ${samplePage()}
+    </section>`;
+  };
+  let res;
+  try { res = await fetch(src, { cache: 'no-store' }); } catch { res = null; }
+  if (!res || !res.ok) {
+    empty('This page replays a recorded reading', 'No recorded reading is published here yet. When one is, this page plays it back through the same scoring code as the app: every flag, every note and the numbers, with no camera and no key.');
+    return;
   }
+  let s;
+  try {
+    const data = await res.json();
+    s = data.raw ? { ...data.raw, reader: data.reader, marks: data.marks || data.raw.marks } : data;
+    if (!Array.isArray(s.paragraphs) || !Array.isArray(s.timeline) || !Array.isArray(s.events) || !s.marks) throw new Error('not a session file');
+  } catch {
+    empty('This recording could not be read', 'The session file at this address is not one Unskipped wrote. Nothing else is shown rather than a guess.');
+    return;
+  }
+  review(s, { replay: true });
 }
 
 if (REPLAY) replayBoot();

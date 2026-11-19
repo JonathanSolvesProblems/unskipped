@@ -10,7 +10,8 @@
     "camtest": "node tools/camtest.js",
     "test": "node --test test/*.test.js",
     "results": "node tools/results.js",
-    "check": "node tools/results.js && node tools/check-claims.js post/devto.md"
+    "check": "node tools/results.js && node tools/check-claims.js post/devto.md",
+    "e2e": "py tools/e2e.py"
   },
   "dependencies": {
     "@fontsource-variable/literata": "^5.3.0",
