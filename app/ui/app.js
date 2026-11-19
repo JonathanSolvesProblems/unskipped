@@ -443,7 +443,7 @@ function writer() {
 
 // ---------------------------------------------------------------- replay (static page, no camera, no key)
 async function replayBoot() {
-  const src = new URLSearchParams(location.search).get('session') || 'replay/session.json';
+  const src = new URLSearchParams(location.search).get('session') || '../../results/sessions/graded.json';
   try {
     const data = await (await fetch(src)).json();
     const s = data.raw ? { ...data.raw, reader: data.reader, marks: data.marks || data.raw.marks } : data;
