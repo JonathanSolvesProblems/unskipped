@@ -143,6 +143,25 @@ p{{margin:0;font:400 22px/1.4 Figtree,sans-serif;color:#c4d1c8;max-width:1180px}
 </body></html>"""
 
 
+COVER = """<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{{font-family:Literata;src:url(../../app/ui/fonts/literata-latin-opsz-normal.woff2) format('woff2');font-weight:200 900}}
+@font-face{{font-family:Figtree;src:url(../../app/ui/fonts/figtree-latin-400-normal.woff2) format('woff2');font-weight:400}}
+html,body{{margin:0;width:1000px;height:420px;background:#22352b;overflow:hidden;color:#eef2ee}}
+.copy{{position:absolute;left:56px;top:0;bottom:0;width:470px;display:flex;flex-direction:column;justify-content:center;gap:18px}}
+.mark{{font:500 30px Literata,serif;display:flex;align-items:flex-start;gap:3px}}
+.mark i{{display:block;width:16px;height:9px;background:#ff4f93;margin-top:9px}}
+h1{{margin:0;font:500 52px/1.06 Literata,serif;font-variation-settings:'opsz' 72;letter-spacing:-.015em}}
+p{{margin:0;font:400 17px/1.4 Figtree,sans-serif;color:#c4d1c8}}
+img{{position:absolute;right:24px;top:50%;transform:translateY(-50%);height:418px;
+  -webkit-mask-image:linear-gradient(to right,transparent,#000 9%,#000 94%,transparent),linear-gradient(transparent,#000 5%,#000 95%,transparent);
+  -webkit-mask-composite:source-in;mask-composite:intersect}}
+</style></head><body>
+<div class="copy"><div class="mark">Unskipped<i></i></div><h1>See where your reader stopped caring</h1>
+<p>A beta reader's face and pulse leave page flags in the writer's margin. Built on Presage SmartSpectra.</p></div>
+<img src="{img}">
+</body></html>"""
+
+
 def esc(t):
     return t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
@@ -178,8 +197,26 @@ def main():
             slide_page.evaluate("document.fonts.ready")
             slide_page.wait_for_function("[...document.images].every(i => i.complete && i.naturalWidth)")
             built.append((name, cap, preview, slide_page.screenshot(type="png")))
+        # DEV cover (1000x420): the wordmark and promise beside the flagged sample page from home
+        cap_page.goto(base + "app/ui/index.html?mock=1")
+        cap_page.wait_for_selector(".sample-page .flag")
+        cap_page.wait_for_timeout(800)
+        box = cap_page.locator(".sample-page").bounding_box()
+        pad = 48
+        cap_page.screenshot(path=str(WORK / "cap-cover.png"), clip={
+            "x": box["x"] - pad, "y": box["y"] - pad, "width": box["width"] + 2 * pad, "height": box["height"] + 2 * pad})
+        cover = COVER.format(img="cap-cover.png")
+        (WORK / "cover.html").write_text(cover, encoding="utf-8")
+        cover_page = b.new_page(viewport={"width": 1000, "height": 420}, device_scale_factor=2)
+        cover_page.goto(base + "tmp/gallery/cover.html")
+        cover_page.evaluate("document.fonts.ready")
+        cover_page.wait_for_function("[...document.images].every(i => i.complete && i.naturalWidth)")
+        cover_png = cover_page.screenshot(type="png")
         b.close()
     srv.shutdown()
+    (ROOT / "post" / "img").mkdir(parents=True, exist_ok=True)
+    (ROOT / "post" / "img" / "cover.png").write_bytes(cover_png)  # no story text, no numbers: always final
+    print("  ok      cover.png (post/img, 1000x420 at 2x)")
 
     done = not previews and not missing
     out = ROOT / ("post/img" if done else "out/gallery")
