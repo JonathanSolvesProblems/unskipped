@@ -184,7 +184,13 @@ def live(browser):
     page.wait_for_url("**/app/ui/index.html", timeout=15000)
     check("live: root opens the replay page", resp is not None and resp.ok)
     page.wait_for_selector("h1")
-    check("live: fonts loaded", page.evaluate("document.fonts.check('20px Literata') && document.fonts.check('15px Figtree')"))
+    page.evaluate("document.fonts.ready")
+    try:
+        page.wait_for_function("document.fonts.check('20px Literata') && document.fonts.check('15px Figtree')", timeout=10000)
+        fonts_ok = True
+    except Exception:
+        fonts_ok = False
+    check("live: fonts loaded", fonts_ok)
     icon = page.request.get(LIVE + "app/ui/icon.svg")
     check("live: icon served", icon.ok)
     body = page.inner_text("body")
