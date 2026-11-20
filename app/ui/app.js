@@ -168,12 +168,13 @@ async function stopLive() {
 
 const HINTS = { 0: 'Good picture', 1: 'No face found', 2: 'More than one face', 3: 'Centre your face', 4: 'Adjust your distance', 5: 'Too dark', 6: 'Too bright', 7: 'Sit back: show the top of your chest', 10: 'Camera adjusting', 11: 'Frame rate too low', 12: 'Hold still', 13: 'Too close', 14: 'Too far', 15: 'Move down a little', 16: 'Move up a little', 17: 'Face the screen' };
 
-function railHtml() {
+function railHtml({ stop = false } = {}) {
   return `<aside class="rail">
     <canvas id="preview" width="192" height="108" aria-label="Live camera preview, not recorded"></canvas>
     <div class="state" id="status" role="status"></div>
     <div class="readout" id="readout"></div>
     <p class="rail-note">Live camera, on this laptop only. Not recorded.</p>
+    ${stop ? '<div class="on-cloth"><button class="btn quiet" id="quit">Stop</button></div>' : ''}
   </aside>`;
 }
 function paintRail() {
@@ -222,23 +223,25 @@ function read() {
       <h1>${esc(s.title)}</h1>${s.byline ? `<div class="byline">${esc(s.byline)}</div>` : ''}
       ${s.paragraphs.map((p, i) => `<p data-i="${i}">${esc(p.text)}</p>`).join('')}
       <div class="row" style="margin-top:44px"><button class="btn" id="done">I've finished</button></div>
-    </article>${railHtml()}</section>`;
+    </article>${railHtml({ stop: true })}</section>`;
   window.scrollTo(0, 0);
   s.readStart = now();
   const paras = [...view.querySelectorAll('#page p[data-i]')];
   let current = -1;
   const track = () => {
     const y = window.innerHeight * 0.38;
+    // -1 while the title is on the line or the reader is past the last paragraph, so that time
+    // is not credited to the first or last paragraph (the scorer skips -1)
     let pick = -1;
     for (const el of paras) {
       const r = el.getBoundingClientRect();
       if (r.top <= y && r.bottom >= y) { pick = Number(el.dataset.i); break; }
-      if (r.top > y) { pick = Number(el.dataset.i); break; }
+      if (r.top > y) { pick = el === paras[0] ? -1 : Number(el.dataset.i); break; }
     }
-    if (pick !== current && pick >= 0) {
+    if (pick !== current) {
       if (current >= 0) paras[current].classList.remove('focus');
-      paras[pick].classList.add('focus'); current = pick;
-      paras[pick].append(liveFlag);
+      current = pick;
+      if (pick >= 0) { paras[pick].classList.add('focus'); paras[pick].append(liveFlag); } else liveFlag.remove();
       s.timeline.push({ t: now(), p: pick });
     }
   };
@@ -253,6 +256,10 @@ function read() {
   S.focusTimer = setInterval(track, 250);
   S.railTimer = setInterval(paintRail, 500);
   $('#done').onclick = async () => { s.readEnd = now(); window.onscroll = null; await stopLive(); marks(); };
+  $('#quit').onclick = async () => {
+    window.onscroll = null; await stopLive(); S.session = null;
+    toast('Stopped. The camera is off and nothing was sent.'); home();
+  };
 }
 
 // ---------------------------------------------------------------- marks (before any note is shown)
@@ -262,8 +269,8 @@ function marks() {
   const state = new Map();
   view.innerHTML = `<section class="marks-wrap">
     <div class="marks-head"><h1>Your marks first</h1>
-    <p class="lede">Before you see anything the camera noticed, click the paragraphs that got you. Click twice for the ones that lost you, or that you skimmed. Click again to clear.</p></div>
-    <article class="sheet markable">${s.paragraphs.map((p, i) => `<p data-i="${i}" tabindex="0" role="button" aria-pressed="false">${esc(p.text)}</p>`).join('')}</article>
+    <p class="lede">Before you see any flag, click the paragraphs that got you. Click twice for the ones that lost you, or that you skimmed. Click again to clear.</p></div>
+    <article class="sheet markable">${s.paragraphs.map((p, i) => `<p data-i="${i}" tabindex="0" role="button" aria-pressed="false">${esc(p.text)}<span class="vh mark-state"></span></p>`).join('')}</article>
     <div class="dock on-cloth"><button class="btn" id="save">Save my marks and show the flags</button><span class="small" id="count"></span></div>
   </section>`;
   const count = () => {
@@ -277,6 +284,7 @@ function marks() {
       el.classList.remove('got', 'lost');
       if (next) { state.set(i, next); el.classList.add(next); } else state.delete(i);
       el.setAttribute('aria-pressed', String(!!next));
+      el.querySelector('.mark-state').textContent = next === 'got' ? ' Marked: got me.' : next === 'lost' ? ' Marked: lost me.' : '';
       count();
     };
     el.onclick = cycle;
@@ -313,7 +321,7 @@ function review(s, { replay = false } = {}) {
   view.innerHTML = `<section class="review">
     <div class="verdict">
       <h1>${headline}</h1>
-      <p class="base">Time on the page alone found ${gd.found}${gm.marked ? ` of ${gd.marked}` : ''}. ${g.refused.length ? `${g.refused.length} paragraph${g.refused.length > 1 ? 's' : ''} had no reading, and say so.` : 'Every paragraph had a reading.'} Read in ${minutes} minutes, face readable ${pct(scored.reader.readableShare)} of the time.</p>
+      <p class="base">${gm.marked && gm.chance !== null ? `Flags placed at random would have found about ${gm.chance}. ` : ''}Time on the page alone found ${gd.found}${gm.marked ? ` of ${gd.marked}` : ''}. ${g.refused.length ? `${g.refused.length} paragraph${g.refused.length > 1 ? 's' : ''} had no reading, and say so.` : 'Every paragraph had a reading.'} Read in ${minutes} minutes, face readable ${pct(scored.reader.readableShare)} of the time.</p>
       <div class="edge" role="list" aria-label="The chapter seen from its edge: each paragraph as wide as it is long">
         ${scored.paragraphs.map((n, i) => {
           const f = FLAG[n.camera];
@@ -403,6 +411,9 @@ function writer() {
   crumbs(null); readline.hidden = true;
   const render = () => {
     const ms = S.manuscript?.ms;
+    // Notes point at paragraphs by position, so a reading of a different text would land them on
+    // the wrong paragraphs. Export only when every reading matches this manuscript.
+    const mismatch = ms && S.readings.some((r) => r.data.textHash !== hashText(ms.paragraphs));
     view.innerHTML = `<section class="writer">
       <h1 style="color:var(--cloth-ink)">Your readers in your margin</h1>
       <p class="lede">Choose your manuscript, add the reading files your readers sent, and each kept note becomes a Word comment on its paragraph.</p>
@@ -412,13 +423,18 @@ function writer() {
         <h2 style="margin-top:28px">Readings</h2>
         <table class="files">${S.readings.map((r) => `<tr><td>${esc(r.data.reader.name)}</td><td>${r.data.notes.length} notes</td><td class="small">${esc(new Date(r.data.sentAt).toLocaleString())}</td><td>${ms && r.data.textHash !== hashText(ms.paragraphs) ? '<span class="error">read a different text than this manuscript</span>' : ''}</td></tr>`).join('') || '<tr><td class="small">None yet</td></tr>'}</table>
         <div class="row"><button class="btn quiet" id="add">Add reading files</button>
-          <button class="btn" id="export" ${ms && S.readings.length ? '' : 'disabled'}>Write the notes into my manuscript</button>
+          <button class="btn" id="export" ${ms && S.readings.length && !mismatch ? '' : 'disabled'}>Write the notes into my manuscript</button>
           <button class="btn quiet" id="home">Back</button></div>
+        ${mismatch ? '<p class="error">A reading was made on a different text than this manuscript, so its notes would land on the wrong paragraphs. Choose the same file the reader read.</p>' : ''}
       </div></section>`;
     $('#pick').onclick = async () => { const r = await api.invoke('manuscript:open'); if (r) { S.manuscript = r; render(); } };
     $('#add').onclick = async () => {
       const files = await api.invoke('file:open-json', { title: 'Add reading files', dir: 'readings' });
-      for (const f of files) if (f.data?.kind === 'reading') S.readings.push(f);
+      for (const f of files) {
+        if (f.data?.kind !== 'reading') continue;
+        if (S.readings.some((r) => r.path === f.path || (r.data.sentAt === f.data.sentAt && r.data.reader?.name === f.data.reader?.name))) continue;
+        S.readings.push(f);
+      }
       render();
     };
     $('#home').onclick = home;

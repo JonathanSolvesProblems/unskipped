@@ -27,8 +27,22 @@ function detections(list, t) {
 /** @param {object} m decoded metrics payload, @param {number} t ms since session start */
 export function compactSample(m, t) {
   const out = { t };
-  const pulse = measurement(last(m?.cardio?.pulseRate));
-  if (pulse) out.pulse = pulse;
+  const pulseRaw = last(m?.cardio?.pulseRate);
+  const pulse = measurement(pulseRaw);
+  if (pulse) {
+    // The pulse value carries its own µs timestamp, which trails the face frames in the same
+    // packet (by about 1.3 s in the camera tests). Place it at its own time, measured from the
+    // newest face timestamp in the packet, so the scorer's lag is counted from the right moment.
+    const faceTs = ['blinking', 'talking', 'expression', 'landmarks']
+      .flatMap((k) => (Array.isArray(m?.face?.[k]) ? m.face[k] : []))
+      .map((d) => Number(d.timestamp)).filter((x) => Number.isFinite(x) && x > 0);
+    const pts = Number(pulseRaw.timestamp);
+    if (faceTs.length && Number.isFinite(pts) && pts > 0) {
+      const gapMs = (Math.max(...faceTs) - pts) / 1000;
+      if (gapMs >= 0 && gapMs < 30000) pulse.t = Math.round(t - gapMs);
+    }
+    out.pulse = pulse;
+  }
   const breath = measurement(last(m?.breathing?.rate));
   if (breath) out.breath = breath;
   const hrv = last(m?.cardio?.hrv);

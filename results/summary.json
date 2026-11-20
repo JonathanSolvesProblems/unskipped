@@ -1,0 +1,18 @@
+{
+ "generatedBy": "tools/results.js",
+ "thresholds": {
+  "minValidShare": 0.5,
+  "minValidMs": 3000,
+  "pulseLagMs": 6000,
+  "pulseMinConfidence": 40,
+  "pulseRiseBpm": 4,
+  "blinkLowRatio": 0.6,
+  "blinkHighRatio": 1.6,
+  "happyConfidence": 50,
+  "smileMinMs": 700,
+  "minExpectedBlinks": 3,
+  "dwellSlowRatio": 1.5,
+  "dwellFastRatio": 0.5
+ },
+ "sessions": {}
+}

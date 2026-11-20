@@ -9,7 +9,9 @@ const W_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 const COMMENTS_REL = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments';
 const COMMENTS_CT = 'application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml';
 
-const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+// Reading files come from someone else, so strip characters XML 1.0 forbids before escaping.
+// eslint-disable-next-line no-control-regex
+const esc = (s) => String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F￾￿]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /** A plain .docx for a text manuscript: title, optional byline, body paragraphs. */
 export async function docxFromText(ms) {
@@ -83,6 +85,9 @@ export async function addComments(docxBuf, ms, comments) {
   zip.file('word/document.xml', doc);
 
   if (commentsXml) {
+    // an empty part can be written as a self-closing root; open it so the new comments fit
+    commentsXml = commentsXml.replace(/<w:comments\b([^>]*?)\/>\s*$/, '<w:comments$1></w:comments>');
+    if (!/<\/w:comments>\s*$/.test(commentsXml)) throw new Error('the manuscript\'s comments part could not be read; nothing was written');
     commentsXml = commentsXml.replace(/<\/w:comments>\s*$/, `${entries.join('')}</w:comments>`);
   } else {
     commentsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:comments xmlns:w="${W_NS}">${entries.join('')}</w:comments>`;

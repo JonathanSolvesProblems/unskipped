@@ -16,7 +16,8 @@ export const THRESHOLDS = {
   blinkLowRatio: 0.6,      // blink rate under 60% of the reader's own = absorbed
   blinkHighRatio: 1.6,     // over 160% = drifting (blinks rise when the mind wanders)
   happyConfidence: 50,     // HAPPY expression score, percent
-  smileMinMs: 700,         // a smile has to last this long to count
+  smileMinMs: 700,         // a smile has to last this long, unbroken, to count
+  minExpectedBlinks: 3,    // judge blink rate only where the reader's own rate predicts 3+ blinks
   dwellSlowRatio: 1.5,     // baseline: time per word 1.5x the reader's median = lingered
   dwellFastRatio: 0.5,     // under half = skimmed
 };
@@ -80,7 +81,7 @@ export function scoreSession(session, th = THRESHOLDS) {
 
   const P = paragraphs.map((p, i) => ({
     i, words: p.words, dwellMs: 0, validMs: 0, awayMs: 0, talkMs: 0, darkMs: 0, movingMs: 0,
-    blinks: 0, smileMs: 0, pulse: [], firstSeen: null,
+    blinks: 0, smileMs: 0, smileRun: 0, pulse: [], firstSeen: null,
   }));
 
   // dwell from the focus timeline
@@ -99,41 +100,51 @@ export function scoreSession(session, th = THRESHOLDS) {
     for (const d of talk.list) { if (d.t <= t) on = d.on; else break; }
     return on;
   };
-  const sampleAt = (() => {
+  const sampleAtFactory = () => {
     let j = 0;
     return (t) => { while (j + 1 < samples.length && samples[j + 1].t <= t) j++; return samples[j]; };
-  })();
+  };
+  const sampleAt = sampleAtFactory();
+  // why a moment is not readable, or null when it is (the same test for time and for blinks)
+  const unreadable = (t, s) => {
+    const code = codeAt(vt, t);
+    if (LOOKED_AWAY.has(code) || (s && s.face === false)) return 'awayMs';
+    if (TOO_DARK.has(code)) return 'darkMs';
+    if (MOVING.has(code)) return 'movingMs';
+    if (talkOn(t)) return 'talkMs';
+    return null;
+  };
   const start = timeline.length ? timeline[0].t : end;
+  let prevPi = -1;
   for (let t = start; t < end; t += 100) {
     const pi = paragraphAt(timeline, t, end);
+    if (pi !== prevPi && prevPi >= 0) P[prevPi].smileRun = 0;
+    prevPi = pi;
     if (pi < 0) continue;
     const p = P[pi];
-    const code = codeAt(vt, t);
     const s = sampleAt(t);
-    const noFace = s && s.face === false;
-    if (LOOKED_AWAY.has(code) || noFace) p.awayMs += 100;
-    else if (TOO_DARK.has(code)) p.darkMs += 100;
-    else if (MOVING.has(code)) p.movingMs += 100;
-    else if (talkOn(t)) p.talkMs += 100;
-    else {
-      p.validMs += 100;
-      if (s?.expr && s.expr.happy >= th.happyConfidence) p.smileMs += 100;
-    }
+    const why = unreadable(t, s);
+    if (why) { p[why] += 100; p.smileRun = 0; continue; }
+    p.validMs += 100;
+    // a smile is the longest unbroken run of happy steps, not scattered blips added up
+    if (s?.expr && s.expr.happy >= th.happyConfidence) { p.smileRun += 100; p.smileMs = Math.max(p.smileMs, p.smileRun); }
+    else p.smileRun = 0;
   }
 
-  // blinks: rising edges, counted only while readable
-  const blinkRises = edges(samples, 'blink').rises;
+  // blinks: rising edges, counted only at moments that count as readable time
+  const blinkRises = edges(samples, 'blink').rises.sort((a, b) => a - b);
+  const blinkSampleAt = sampleAtFactory();
   for (const t of blinkRises) {
     const pi = paragraphAt(timeline, t, end);
     if (pi < 0) continue;
-    const code = codeAt(vt, t);
-    if (!LOOKED_AWAY.has(code) && !talkOn(t)) P[pi].blinks += 1;
+    if (!unreadable(t, blinkSampleAt(t))) P[pi].blinks += 1;
   }
 
-  // pulse: each confident reading is credited to the paragraph read ~6 s earlier
+  // pulse: each confident reading is credited to the paragraph read ~6 s before the moment it
+  // describes (its own timestamp when the packet gave one, else when the packet arrived)
   for (const s of samples) {
     if (!s.pulse || (s.pulse.c ?? 0) < th.pulseMinConfidence) continue;
-    const pi = paragraphAt(timeline, s.t - th.pulseLagMs, end);
+    const pi = paragraphAt(timeline, (s.pulse.t ?? s.t) - th.pulseLagMs, end);
     if (pi >= 0) P[pi].pulse.push(s.pulse.v);
   }
 
@@ -177,7 +188,10 @@ export function scoreSession(session, th = THRESHOLDS) {
     if (p.validMs < th.minValidMs) { out.camera = 'brief'; out.reason = 'too brief to read a signal'; return out; }
 
     const blinkRate = p.blinks / (p.validMs / 60000);
-    const blinkRatio = Number.isFinite(blinkPerMin) && blinkPerMin > 0 ? blinkRate / blinkPerMin : NaN;
+    // With a few seconds of reading, 0 or 1 blinks is normal, so a ratio there is noise. Judge
+    // blinking only where the reader's own rate predicts at least minExpectedBlinks blinks.
+    const expectedBlinks = Number.isFinite(blinkPerMin) ? blinkPerMin * (p.validMs / 60000) : 0;
+    const blinkRatio = expectedBlinks >= th.minExpectedBlinks ? blinkRate / blinkPerMin : NaN;
     const pulseMean = p.pulse.length ? p.pulse.reduce((a, b) => a + b, 0) / p.pulse.length : NaN;
     const pulseDelta = pulseMean - pulseMedian;
     out.evidence.blinkPerMin = round(blinkRate, 1);

@@ -1,0 +1,32 @@
+{
+ "generatedBy": "tools/null-check.js",
+ "readersPerRate": 200,
+ "paragraphs": 29,
+ "rates": [
+  {
+   "blinksPerMin": 6,
+   "grippedPct": 0.5,
+   "driftingPct": 0.2,
+   "smiledPct": 0
+  },
+  {
+   "blinksPerMin": 10,
+   "grippedPct": 2.1,
+   "driftingPct": 1.2,
+   "smiledPct": 0
+  },
+  {
+   "blinksPerMin": 15,
+   "grippedPct": 5,
+   "driftingPct": 3,
+   "smiledPct": 0
+  },
+  {
+   "blinksPerMin": 20,
+   "grippedPct": 6.7,
+   "driftingPct": 3.2,
+   "smiledPct": 0
+  }
+ ],
+ "maxFalseGrippedPct": 6.7
+}

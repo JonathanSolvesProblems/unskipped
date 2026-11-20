@@ -27,7 +27,7 @@ Claire, in the demo, is a composite: a novelist revising chapter by chapter with
 
 {% youtube TBD %}
 
-**Try it with no camera and no key:** [the replay page](TBD) plays back my real recorded reading through the same scoring code, with the flags, the notes and the numbers.
+**Try it with no camera and no key:** [the replay page](https://jonathansolvesproblems.github.io/unskipped/) plays back my real recorded reading through the same scoring code, with the flags, the notes and the numbers.
 
 ## Code
 
@@ -40,12 +40,14 @@ Setup is in the README: `npm install`, put a free Presage key in `.env`, `npm st
 | SmartSpectra signal | What Unskipped does with it |
 |---|---|
 | Pulse rate (with its confidence) | Each confident reading is credited to the paragraph that was on the reading line about 6 seconds earlier, because pulse is an average over roughly 12 seconds. A paragraph 4 bpm or more above the reader's own median gets a pink flag. |
-| Blinking | Blink rate per paragraph against the reader's own rate for the session. Under 60% of it: absorbed (pink). Over 160%: may have drifted (blue). |
-| Expressions | A happy expression held for 0.7 s or more: yellow. |
+| Blinking | Blink rate per paragraph against the reader's own rate for the session, judged only where that rate predicts at least 3 blinks (in a few seconds, 0 or 1 blinks is normal and says nothing). Under 60% of it: absorbed (pink). Over 160%: may have drifted (blue). |
+| Expressions | A happy expression held unbroken for 0.7 s or more: yellow. |
 | Talking | Time spent talking is not reading time. A paragraph read mostly aloud gets "no reading". |
 | Validation status (face not forward, no face, too dark, moving) | Same: the SDK's own call that the picture is not a reading face, so no guess for that paragraph. |
 
-The reading line is a dashed rule across the screen at 38% of its height; the paragraph crossing it is the one being read, and the app records when each paragraph arrived there. All thresholds were committed before my graded read (`results/controls.md`), with one layout change recorded in the same file.
+The reading line is a dashed rule across the screen at 38% of its height; the paragraph crossing it is the one being read, and the app records when each paragraph arrived there. All thresholds were committed before my graded read (`results/controls.md`), and every later change is listed there with its date and reason.
+
+One of those changes is worth telling. Before the graded read I had a fresh reviewer go through the scoring code, and it found that a reader with no reaction at all would still get about a third of paragraphs flagged "gripped": blink rate was being judged on windows of a few seconds. I fixed it before reading, and kept the check as a script (`node tools/null-check.js`). A simulated reader with random blinks, a flat pulse and no smile is now flagged gripped on at most <!--claim:nullcheck.maxFalseGrippedPct-->6.7<!--/claim-->% of paragraphs.
 
 What I learned about the SDK on my laptop, from four short test runs (`results/sdk-notes.md`): the built-in webcam held 29.9 fps; pulse needs the upper chest in frame as well as the face, and about 16 seconds of steady picture before its first value; and requesting the full cardio bundle produced no pulse at all on my setup, while `PULSE_RATE` alone worked (the same thing is reported in SmartSpectra issue #18). So the settle screen asks the reader to sit back until the camera sees them down to the collarbones, and waits for a confident pulse before reading starts.
 
@@ -53,11 +55,11 @@ What I learned about the SDK on my laptop, from four short test runs (`results/s
 
 I read Saki's "The Open Window" (1914, 29 paragraphs) without having read it before, then marked the paragraphs that got me before I saw any flag.
 
-- Of the <!--claim:graded.camera.got.marked-->TBD<!--/claim--> paragraphs I marked, the camera flagged <!--claim:graded.camera.got.found-->TBD<!--/claim-->.
-- Time on the page alone, which is what reading apps measure, found <!--claim:graded.dwell.got.found-->TBD<!--/claim-->.
-- TBD paragraphs had no reading, each with its reason.
+- Of the <!--claim:graded.camera.got.marked-->TBD<!--/claim--> paragraphs I marked, the camera flagged <!--claim:graded.camera.got.found-->TBD<!--/claim-->. Flags placed at random would have found <!--claim:graded.camera.got.chance-->TBD<!--/claim-->.
+- Time on the page alone, which is what reading apps measure, found <!--claim:graded.dwell.got.found-->TBD<!--/claim--> (by chance: <!--claim:graded.dwell.got.chance-->TBD<!--/claim-->).
+- <!--claim:graded.refusedCount-->TBD<!--/claim--> paragraphs had no reading, each with its reason.
 
-**Controls**, written down before the run: on a second read I looked at my phone for a whole paragraph, read one aloud, and turned away for another. TBD of 3 came back as "no reading" with the right reason, and the two paragraphs I read normally got readings.
+**Controls**, written down before the run: on a second read I looked at my phone for a whole paragraph, read one aloud, and turned away for another. <!--claim:controls.plantedRefused-->TBD<!--/claim--> of 3 came back as "no reading" with the right reason, and <!--claim:controls.harmlessRead-->TBD<!--/claim--> of the 2 paragraphs I read normally got readings.
 
 **Pulse against a reference**: TBD (fingertip pulse oximeter beside the camera).
 
