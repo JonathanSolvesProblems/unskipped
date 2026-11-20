@@ -123,11 +123,27 @@ def reader_flow(browser, base):
     page.click("#pick")
     page.click("#add")
     expect(page.locator("table.files")).to_contain_text("Test reader")
+    page.click("#add")
+    check("writer: the same reading added twice is listed once", page.locator("table.files tr").count() == 1)
     page.click("#export")
     page.wait_for_function("window.__exported !== undefined")
     exp = page.evaluate("window.__exported")
     check("writer: one summary comment plus one per kept note", len(exp["comments"]) == len(saved["notes"]) + 1)
     check("reader and writer flow: no console errors", not errors, "; ".join(errors[:3]))
+    page.close()
+
+
+def stop_while_reading(browser, base):
+    errors = []
+    page = browser.new_page(viewport={"width": 1280, "height": 720})
+    watch(page, errors)
+    page.goto(base + "app/ui/index.html?mock=1&screen=read")
+    page.wait_for_selector("#page p[data-i]", timeout=15000)
+    page.click("#quit")
+    expect(page.locator("h1")).to_contain_text("See where your reader stopped caring")
+    check("read: Stop turns the camera off and returns home", True)
+    check("read: Stop sends nothing", page.evaluate("window.__saved === undefined"))
+    check("stop flow: no console errors", not errors, "; ".join(errors[:3]))
     page.close()
 
 
@@ -184,6 +200,7 @@ def main():
     with sync_playwright() as p:
         browser = p.chromium.launch()
         reader_flow(browser, base)
+        stop_while_reading(browser, base)
         replay(browser, base)
         if "--live" in sys.argv:
             live(browser)

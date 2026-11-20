@@ -101,6 +101,59 @@ test('dwell baseline flags lingered and skimmed paragraphs', () => {
   assert.equal(paragraphs[2].dwell, 'skimmed');
 });
 
+test('no blink in a short paragraph is not read as gripped', () => {
+  // 3.5 s of reading at 20 blinks a minute predicts about 1 blink: 0 is normal, not absorbed
+  const s = baseSession();
+  s.timeline = [{ t: 0, p: 0 }, { t: 10000, p: 1 }, { t: 13500, p: 2 }, { t: 30000, p: 3 }, { t: 40000, p: 4 }, { t: 50000, p: 5 }];
+  s.events = steadySamples(s, { blinkEvery: { 1: 100000 } });
+  const { paragraphs } = scoreSession(s);
+  assert.equal(paragraphs[1].camera, 'steady');
+  assert.equal(paragraphs[1].evidence.blinkRatio, null);
+});
+
+test('scattered smile blips do not add up to a smile', () => {
+  const s = baseSession();
+  s.events = steadySamples(s).map((e) => {
+    // ten 200 ms blips across paragraph 2: 2 s in total, never 0.7 s unbroken
+    const on = e.t >= 20000 && e.t < 30000 && e.t % 1000 < 200;
+    return on ? { ...e, s: { ...e.s, expr: { happy: 80, top: '5' } } } : e;
+  });
+  const { paragraphs } = scoreSession(s);
+  assert.notEqual(paragraphs[2].camera, 'amused');
+  assert.ok(paragraphs[2].evidence.smileMs < 700);
+});
+
+test('a blink in time that is not readable (too dark) is not counted', () => {
+  const s = baseSession();
+  s.events = [
+    ...steadySamples(s),
+    { t: 20000, kind: 'validation', code: 5, hint: '' },
+    { t: 30000, kind: 'validation', code: 0, hint: '' },
+  ].sort((a, b) => a.t - b.t);
+  const away = scoreSession(s);
+  assert.equal(away.paragraphs[2].camera, 'no-reading');
+  assert.equal(away.paragraphs[2].reason, 'the light was too poor');
+  // baseline stays near the true 20 a minute; counting the dark paragraph's blinks against
+  // readable time only (the old behaviour) gave about 24
+  assert.ok(away.reader.blinkPerMin < 21, `blinkPerMin ${away.reader.blinkPerMin}`);
+});
+
+test('pulse is placed at its own timestamp, not the packet arrival', () => {
+  const m = {
+    cardio: { pulseRate: [{ value: 70, confidence: 90, stable: true, timestamp: '1000000000' }] },
+    face: { blinking: [{ detected: false, timestamp: '1001300000' }] },
+  };
+  assert.equal(compactSample(m, 50000).pulse.t, 48700);
+});
+
+test('grade states what chance alone would find', () => {
+  const notes = Array.from({ length: 10 }, (_, i) => ({ i, camera: i < 2 ? 'gripped' : 'steady', dwell: 'normal' }));
+  const g = grade(notes, { got: [0, 5, 6, 7], lost: [] });
+  // 2 of 10 judgeable paragraphs flagged, 4 marked: 0.8 expected by chance
+  assert.equal(g.camera.got.chance, 0.8);
+  assert.equal(g.camera.got.found, 1);
+});
+
 test('grade compares camera and dwell flags to the reader marks', () => {
   const notes = [
     { i: 0, camera: 'amused', dwell: 'normal' },

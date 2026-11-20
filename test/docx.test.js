@@ -45,3 +45,17 @@ test('a writer .docx keeps its own comments when reader notes are added', async 
   assert.equal(info.comments, 2);
   assert.deepEqual(info.authors.sort(), ['Claire', 'Reader']);
 });
+
+test('an empty self-closing comments part and control characters still give a valid file', async () => {
+  const ms = { title: 'T', byline: null, paragraphs: [{ text: 'First paragraph here.', words: 3 }, { text: 'Second one.', words: 2 }] };
+  const zip = await JSZip.loadAsync(await docxFromText(ms));
+  zip.file('word/comments.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:comments xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>');
+  const base = Buffer.from(await zip.generateAsync({ type: 'nodebuffer' }));
+  const out = await addComments(base, ms, [{ para: 1, author: 'R\u0001eader', text: 'Note with a bell \u0007 in it' }]);
+  const info = await inspectComments(out);
+  assert.equal(info.comments, 1);
+  assert.equal(info.anchors, 1);
+  const c = await (await JSZip.loadAsync(out)).file('word/comments.xml').async('string');
+  assert.ok(!/[\u0000-\u0008]/.test(c), 'no control characters left in the XML');
+  assert.match(c, /<\/w:comments>$/);
+});
