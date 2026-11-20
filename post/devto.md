@@ -81,7 +81,9 @@ I read Saki's "The Open Window" (1914, 29 paragraphs) without having read it bef
 
 ## What's next
 
-TBD: outreach to a writers' group.
+One reader is a start, not a result. On 20 November I wrote to the Quebec Writers' Federation in Montreal and offered a free session to any member who wants to try it on a chapter: I set it up and sit in, their beta reader reads, they get the comments. I also asked what a writer would need to see before trusting something like this, because that answer decides what gets built next.
+
+After that: more readers on the same chapter (the export already stacks several readers' comments on one manuscript), and a longer read than a short story, where drifting matters most.
 
 ## Agent Session
 
