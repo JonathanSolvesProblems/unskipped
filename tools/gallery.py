@@ -53,7 +53,7 @@ def capture(page, base, name, real):
         page.wait_for_selector(".sample-page .flag")
         preview = False
     elif name == "consent":
-        page.goto(base + "app/ui/index.html?mock=1&screen=consent")
+        page.goto(base + "app/ui/index.html?mock=1&screen=consent" + ms)
         page.wait_for_selector("#ok")
         preview = False
     elif name == "read":
@@ -71,6 +71,11 @@ def capture(page, base, name, real):
         page.evaluate("window.scrollTo(0, 0)")
         preview = not real
     elif name in ("result", "refusal"):
+        if name == "refusal":
+            # a real refusal needs a session with planted no-reading paragraphs (the controls re-run)
+            if not (ROOT / "results" / "sessions" / "controls2.json").exists():
+                return None, True
+            session = "../../results/sessions/controls2.json"
         page.goto(base + "app/ui/index.html?session=" + session)
         page.wait_for_selector(".verdict h1")
         page.wait_for_timeout(1200)  # flags finish sliding out
@@ -82,7 +87,7 @@ def capture(page, base, name, real):
                 page.evaluate("document.querySelector('.annot .flag.cur').scrollIntoView({block:'center'})")
                 page.wait_for_timeout(500)
         preview = not real
-    elif name == "word":
+    elif name in ("word", "pulse"):
         return None, True  # only a real still will do
     else:
         raise ValueError(name)
@@ -93,33 +98,39 @@ def capture(page, base, name, real):
 def slides(s):
     """Story order = post/demo-script.md. Headlines obey the charter: sentence case, no full stop, no colon."""
     real = s is not None
+    pc = json.loads((ROOT / "results" / "pulse-check.json").read_text(encoding="utf-8"))
+    pulse_cap = (f"{pc['within5']} of {pc['pairs']} readings within 5 bpm of the oximeter, mean gap {pc['meanAbsDiff']} bpm. "
+                 "One person, one sitting, pulse rate only.")
     src = "Recorded session results/sessions/graded.json, scored by src/score.js" if real else "Layout preview, simulated session"
     if real:
         got, dwell, refused = s["camera"]["got"], s["dwell"]["got"], s["refused"]
         reasons = sorted({r["reason"] for r in refused})
         result_head = f"Of the {got['marked']} paragraphs the reader marked as got me, the camera flagged {got['found']}"
-        result_cap = (f"Graded against the reader's own marks, saved before the review opened. "
-                      f"Time on the page alone found {dwell['found']} of {dwell['marked']}.")
+        result_cap = (f"Graded against the reader's own marks. Random flags would find {got['chance']}; "
+                      f"time on the page alone found {dwell['found']} of {dwell['marked']}.")
         refusal_cap = (f"{len(refused)} of {s['paragraphs']} paragraphs had no reading ({', '.join(reasons) or 'none'}), "
                        f"and the note says so instead of guessing.")
     else:
         result_head = "Of the paragraphs the reader marked as got me, the camera flagged some"
         result_cap = "Preview. The real numbers come from results/summary.json once the graded reading is in."
         refusal_cap = "Preview. Paragraphs with no reading say why: looked away, talking, too dark or moving."
-    return [
+    plan = [
         ("1-home", "home", "See where your reader stopped caring", "Unskipped, home screen",
          "A beta reader's reactions land in the writer's margin as page flags, read by Presage SmartSpectra on the reader's laptop."),
         ("2-consent", "consent", "The reader agrees before the camera turns on", "Unskipped, consent screen",
          "What the camera reads, that video never leaves the laptop, telemetry off, and that the reader approves every note."),
         ("3-read", "read", "The camera reads the reader while they read", "Live capture, SmartSpectra Node SDK 3.5.0",
-         "Pulse, blinks, smiles, talking and looking away, credited to the paragraph under the reading line."),
+         "One paragraph at a time, so the app knows which one is read; live pulse and blinks from the laptop webcam beside it."),
         ("4-marks", "marks", "The reader marks their own moments first", "Unskipped, marks screen",
          "Before any result is shown, the reader marks what got them and what lost them. Those marks are the grader."),
         ("5-result", "result", result_head, src, result_cap),
+        ("5b-pulse", "pulse", "The webcam pulse, checked against a fingertip sensor", "LOOKEE A310 oximeter, filmed beside the run", pulse_cap),
         ("6-refusal", "refusal", "When it cannot tell, it says so", src, refusal_cap),
         ("7-word", "word", "The notes land in the writer's own manuscript", "Exported .docx, opened in Google Docs",
          "Every note the reader kept becomes a comment on its paragraph, next to the writer's own comments."),
     ]
+    has_controls = (ROOT / "results" / "sessions" / "controls2.json").exists()
+    return [x for x in plan if x[1] != "refusal" or has_controls]
 
 
 SLIDE = """<!doctype html><html><head><meta charset="utf-8"><style>
