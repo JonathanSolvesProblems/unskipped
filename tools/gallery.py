@@ -108,8 +108,12 @@ def slides(s):
         result_head = f"Of the {got['marked']} paragraphs the reader marked as got me, the camera flagged {got['found']}"
         result_cap = (f"Graded against the reader's own marks. Random flags would find {got['chance']}; "
                       f"time on the page alone found {dwell['found']} of {dwell['marked']}.")
-        refusal_cap = (f"{len(refused)} of {s['paragraphs']} paragraphs had no reading ({', '.join(reasons) or 'none'}), "
-                       f"and the note says so instead of guessing.")
+        refusal_cap = "Planted controls: no reading when the reader reads aloud or turns away, with the reason, never a guess."
+        summ = json.loads((ROOT / "results" / "summary.json").read_text(encoding="utf-8"))
+        c2 = (summ.get("controls") or {}).get("controls2")
+        if c2:
+            refusal_cap = (f"Planted controls: {c2['plantedRefused']} of {c2['planted']} planted paragraphs refused with the right reason, "
+                           f"{c2['harmlessRead']} of {c2['harmless']} normal ones read.")
     else:
         result_head = "Of the paragraphs the reader marked as got me, the camera flagged some"
         result_cap = "Preview. The real numbers come from results/summary.json once the graded reading is in."
@@ -125,7 +129,7 @@ def slides(s):
          "Before any result is shown, the reader marks what got them and what lost them. Those marks are the grader."),
         ("5-result", "result", result_head, src, result_cap),
         ("5b-pulse", "pulse", "The webcam pulse, checked against a fingertip sensor", "LOOKEE A310 oximeter, filmed beside the run", pulse_cap),
-        ("6-refusal", "refusal", "When it cannot tell, it says so", src, refusal_cap),
+        ("6-refusal", "refusal", "When it cannot tell, it says so", "Recorded session results/sessions/controls2.json, scored by src/score.js", refusal_cap),
         ("7-word", "word", "The notes land in the writer's own manuscript", "Exported .docx, opened in Google Docs",
          "Every note the reader kept becomes a comment on its paragraph, next to the writer's own comments."),
     ]
