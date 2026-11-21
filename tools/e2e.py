@@ -75,7 +75,7 @@ def reader_flow(browser, base):
     check("settle: start unlocks after a steady pulse", True)
     page.click("#start")
     expect(page.locator("#page p[data-i]")).to_have_count(12)
-    check("read: live film flag on the reading line", page.locator("#page .flag.live").count() == 1)
+    check("read: no flags shown while reading", page.locator("#page .flag").count() == 0)
     first = page.locator("#page p.focus").get_attribute("data-i")
     page.mouse.wheel(0, 1600)
     page.wait_for_timeout(600)
@@ -104,7 +104,7 @@ def reader_flow(browser, base):
     check("review: flags on the page", n > 0, f"{n} flags")
     if n:
         flags.first.click()
-        expect(page.locator("#note h3")).to_contain_text("Paragraph")
+        expect(page.locator("#note h2")).to_contain_text("Paragraph")
         flags.first.click()
         check("review: second click drops the note", flags.first.get_attribute("aria-pressed") == "false")
     page.click(".edge .slot >> nth=0")
@@ -150,7 +150,7 @@ def stop_while_reading(browser, base):
 def replay(browser, base):
     for label, q, expect_text in [
         ("replay with a session", "?session=../../tmp/ui-fixture-session.json", None),
-        ("replay with no session", "?session=missing.json", "This page replays a recorded reading"),
+        ("replay with no session", "?session=missing.json", "No recorded reading here yet"),
         ("replay with a bad file", "?session=../../package.json", "This recording could not be read"),
     ]:
         for vw in (1280, 390):

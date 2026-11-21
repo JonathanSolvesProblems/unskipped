@@ -103,13 +103,17 @@ function consent() {
     </div>
     <div class="consent-act">
       <label class="agree"><input type="checkbox" id="ok"> I agree to be measured while I read this piece</label>
-      <label class="field">Your name, as the writer will see it <input type="text" id="name" value="Reader"></label>
+      <label class="field">Your name, as the writer will see it <input type="text" id="name" placeholder="Your name"></label>
       <label class="field">Camera <select id="cam">${cams.map((c, i) => `<option value="${i}">${esc(c.name)}</option>`).join('')}</select></label>
       <div class="row"><button class="btn" id="go" disabled>Turn on the camera</button><button class="btn quiet" id="back">Not now</button></div>
+      <p class="small" id="why">Tick the box above to turn the camera on.</p>
       <p class="small">Nothing is measured until you press Start reading, and nothing leaves this laptop until you press Send.</p>
     </div>
   </section>`;
-  $('#ok').onchange = (e) => { $('#go').disabled = !e.target.checked || !S.env.hasKey || !cams.length; };
+  $('#ok').onchange = (e) => {
+    $('#go').disabled = !e.target.checked || !S.env.hasKey || !cams.length;
+    $('#why').textContent = !S.env.hasKey ? 'A Presage key is needed first. The README says how.' : !cams.length ? 'No camera found on this computer.' : e.target.checked ? '' : 'Tick the box above to turn the camera on.';
+  };
   $('#back').onclick = home;
   $('#go').onclick = async () => {
     const cam = cams[Number($('#cam').value)];
@@ -169,13 +173,13 @@ async function stopLive() {
 const HINTS = { 0: 'Good picture', 1: 'No face found', 2: 'More than one face', 3: 'Centre your face', 4: 'Adjust your distance', 5: 'Too dark', 6: 'Too bright', 7: 'Sit back: show the top of your chest', 10: 'Camera adjusting', 11: 'Frame rate too low', 12: 'Hold still', 13: 'Too close', 14: 'Too far', 15: 'Move down a little', 16: 'Move up a little', 17: 'Face the screen' };
 
 function railHtml({ stop = false } = {}) {
-  return `<aside class="rail">
+  return `<section class="rail" aria-label="Live camera">
     <canvas id="preview" width="192" height="108" aria-label="Live camera preview, not recorded"></canvas>
     <div class="state" id="status" role="status"></div>
     <div class="readout" id="readout"></div>
     <p class="rail-note">Live camera, on this laptop only. Not recorded.</p>
-    ${stop ? '<div class="on-cloth"><button class="btn quiet" id="quit">Stop</button></div>' : ''}
-  </aside>`;
+    ${stop ? '<div class="on-cloth row"><button class="btn" id="done">I’ve finished</button><button class="btn quiet" id="quit">Stop</button></div>' : ''}
+  </section>`;
 }
 function paintRail() {
   const L = S.live, t = now();
@@ -184,9 +188,9 @@ function paintRail() {
   const confident = L.pulse && (L.pulse.c ?? 0) >= 40;
   const ro = $('#readout');
   if (ro) ro.innerHTML = `
-    <span class="k">Pulse</span><b>${confident ? `${L.pulse.v.toFixed(0)}<small> bpm</small>` : '<small>settling</small>'}</b>
-    <span class="k">Blinks</span><b>${t > 10000 ? `${blinksMin.toFixed(0)}<small> a min</small>` : '<small>counting</small>'}</b>
-    <span class="k">Smiling</span><b><small>${L.smile >= 50 ? 'yes' : 'no'}</small></b>`;
+    <span class="k">Pulse</span><b>${confident ? `${L.pulse.v.toFixed(0)}<small> bpm</small>` : '<small>Settling</small>'}</b>
+    <span class="k">Blinks</span><b>${t > 10000 ? `${blinksMin.toFixed(0)}<small> a min</small>` : '<small>Counting</small>'}</b>
+    <span class="k">Smiling</span><b><small>${L.smile >= 50 ? 'Yes' : 'No'}</small></b>`;
   const st = $('#status');
   if (st) st.innerHTML = `<span class="${L.code === 0 ? 'ok' : 'warn'}">${esc(HINTS[L.code] ?? L.hint ?? L.code)}</span><span>${L.fps} fps</span>`;
 }
@@ -194,12 +198,12 @@ function paintRail() {
 // ---------------------------------------------------------------- settle
 function settle() {
   crumbs('Settle'); readline.hidden = true;
-  view.innerHTML = `<section class="reading">
+  view.innerHTML = `<section class="reading settle">
     <div class="sheet page" style="padding-bottom:64px">
       <h1>Sit so the camera sees your face and the top of your chest</h1>
       <p>Sit back a little, so the preview shows you down to the collarbones. Light in front of you, not behind. Your first pulse reading comes after about fifteen seconds of a steady picture.</p>
-      <p class="small" id="settleMsg" role="status">Waiting for a steady pulse</p>
-      <div class="row"><button class="btn" id="start" disabled>Start reading</button><button class="btn quiet" id="stop">Stop</button></div>
+      <p class="small settle-state" id="settleMsg" role="status">Waiting for a steady pulse</p>
+      <div class="row"><button class="btn" id="start" disabled>Start reading</button><button class="btn quiet" id="stop">Turn the camera off</button></div>
     </div>${railHtml()}</section>`;
   S.session.settleStart = now();
   S.railTimer = setInterval(() => {
@@ -222,7 +226,6 @@ function read() {
     <article class="sheet page" id="page">
       <h1>${esc(s.title)}</h1>${s.byline ? `<div class="byline">${esc(s.byline)}</div>` : ''}
       ${s.paragraphs.map((p, i) => `<p data-i="${i}">${esc(p.text)}</p>`).join('')}
-      <div class="row" style="margin-top:44px"><button class="btn" id="done">I've finished</button></div>
     </article>${railHtml({ stop: true })}</section>`;
   window.scrollTo(0, 0);
   s.readStart = now();
@@ -241,13 +244,10 @@ function read() {
     if (pick !== current) {
       if (current >= 0) paras[current].classList.remove('focus');
       current = pick;
-      if (pick >= 0) { paras[pick].classList.add('focus'); paras[pick].append(liveFlag); } else liveFlag.remove();
+      if (pick >= 0) paras[pick].classList.add('focus');
       s.timeline.push({ t: now(), p: pick });
     }
   };
-  // the clear film flag that rides on the fore-edge beside the paragraph being read
-  const liveFlag = document.createElement('span');
-  liveFlag.className = 'flag none live'; liveFlag.setAttribute('aria-hidden', 'true');
   const page = $('#page');
   const placeLine = () => { const r = page.getBoundingClientRect(); readline.style.left = `${r.left}px`; readline.style.width = `${r.width}px`; };
   placeLine(); window.onresize = placeLine;
@@ -303,6 +303,9 @@ function marks() {
 }
 
 // ---------------------------------------------------------------- review
+const numWord = (n) => (n >= 0 && n <= 10 ? ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][n] : String(n));
+const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+
 function review(s, { replay = false } = {}) {
   crumbs(replay ? null : 'Review'); readline.hidden = true;
   if (!s.review) s.review = { openedAt: new Date().toISOString() };
@@ -321,14 +324,14 @@ function review(s, { replay = false } = {}) {
   view.innerHTML = `<section class="review">
     <div class="verdict">
       <h1>${headline}</h1>
-      <p class="base">${gm.marked && gm.chance !== null ? `Flags placed at random would have found about ${gm.chance}. ` : ''}Time on the page alone found ${gd.found}${gm.marked ? ` of ${gd.marked}` : ''}. ${g.refused.length ? `${g.refused.length} paragraph${g.refused.length > 1 ? 's' : ''} had no reading, and say so.` : 'Every paragraph had a reading.'} Read in ${minutes} minutes, face readable ${pct(scored.reader.readableShare)} of the time.</p>
-      <div class="edge" role="list" aria-label="The chapter seen from its edge: each paragraph as wide as it is long">
+      <p class="base">${gm.marked && gm.chance !== null ? `Flags placed at random would find about ${gm.chance} of ${gm.marked}. ` : ''}Time on the page alone found ${gd.found}${gm.marked ? ` of ${gd.marked}` : ''}. ${g.refused.length ? `${cap(numWord(g.refused.length))} paragraph${g.refused.length > 1 ? 's' : ''} had no reading, and say so.` : 'Every paragraph had a reading.'} Read in ${minutes} minutes, face readable ${pct(scored.reader.readableShare)} of the time.</p>
+      <nav class="edge" aria-label="The chapter seen from its edge: each paragraph as wide as it is long">
         ${scored.paragraphs.map((n, i) => {
           const f = FLAG[n.camera];
           const mark = s.marks.got.includes(i) ? 'got' : s.marks.lost.includes(i) ? 'lost' : '';
-          return `<a role="listitem" href="#p${i}" class="slot ${mark}" style="flex-grow:${Math.max(8, s.paragraphs[i].words)}" data-i="${i}" title="Paragraph ${i + 1}${f ? `: ${MEANING[f]}` : ''}">${f ? `<span class="tip ${f}"></span>` : ''}</a>`;
+          return `<a href="#p${i}" class="slot ${mark}" style="flex-grow:${Math.max(8, s.paragraphs[i].words)}" data-i="${i}" title="Paragraph ${i + 1}${f ? `: ${MEANING[f]}` : ''}">${f ? `<span class="tip ${f}"></span>` : ''}</a>`;
         }).join('')}
-      </div>
+      </nav>
       <p class="edge-key">The chapter seen from its edge, each paragraph as wide as it is long: a flag where the camera marked it, a pencil tick under the ones you marked.</p>
     </div>
     <article class="sheet annot" id="annot">
@@ -338,18 +341,18 @@ function review(s, { replay = false } = {}) {
         return `<div class="para ${mark}" data-i="${i}" id="p${i}">${esc(s.paragraphs[i].text)}${f ? `<button class="flag ${f}" style="--k:${i}" data-i="${i}" aria-pressed="true" aria-label="${esc(MEANING[f])}. ${replay ? 'Show note' : 'Show note; press again to drop it'}"></button>` : ''}</div>`;
       }).join('')}
     </article>
-    <aside class="notes">
+    <section class="notes" aria-label="Notes on this reading">
       <div class="legend">
         ${['grip', 'smile', 'drift', 'none'].map((f) => `<div><span class="swatch ${f}"></span>${MEANING[f]}</div>`).join('')}
         <div><span class="swatch pencil"></span>Your own marks, in pencil on the left</div>
       </div>
-      <div class="slip note-slip" id="note"><h3>Select a flag</h3><p class="small">Each flag says what the camera saw on that paragraph and how sure it was.</p></div>
+      <div class="slip note-slip" id="note"><h2>Select a flag</h2><p class="small">Each flag says what the camera saw on that paragraph and how sure it was.</p></div>
       ${replay ? `<div class="slip"><p style="margin:0;font-size:14px;line-height:1.5">This is a recorded reading, replayed from its session file: the same scoring code, no camera and no key. The live app runs on the desktop with a SmartSpectra key.</p></div>` : `
       <div class="send on-cloth">
         <button class="btn" id="send">Send the kept notes to the writer</button>
         <label><input type="checkbox" id="raw"> Also include the raw signal samples, for research. Off by default.</label>
       </div>`}
-    </aside>
+    </section>
   </section>`;
   requestAnimationFrame(() => $('#annot').classList.add('reveal'));
   const showNote = (i) => {
@@ -365,7 +368,7 @@ function review(s, { replay = false } = {}) {
       : e.dwellRatio < 1 ? `You spent ${Math.round(e.dwellRatio * 100)}% of your usual time per word here.`
       : `You spent ${e.dwellRatio.toFixed(1)} times your usual time per word here.`);
     const own = s.marks.got.includes(i) ? 'You marked it as got me.' : s.marks.lost.includes(i) ? 'You marked it as lost me.' : '';
-    $('#note').innerHTML = `<h3>Paragraph ${i + 1}${kept.has(i) ? '' : ', dropped from what you send'}</h3><p>${esc(commentFor(n, name) || 'Nothing to say about this one.')}</p>
+    $('#note').innerHTML = `<h2>Paragraph ${i + 1}${kept.has(i) ? '' : ', dropped from what you send'}</h3><p>${esc(commentFor(n, name) || 'Nothing to say about this one.')}</p>
       <p class="ev">${esc([...ev, own].filter(Boolean).join(' '))}</p>
       ${replay ? '' : '<p class="ev">Click the flag again to drop this note, or to keep it.</p>'}`;
   };
@@ -425,6 +428,7 @@ function writer() {
         <div class="row"><button class="btn quiet" id="add">Add reading files</button>
           <button class="btn" id="export" ${ms && S.readings.length && !mismatch ? '' : 'disabled'}>Write the notes into my manuscript</button>
           <button class="btn quiet" id="home">Back</button></div>
+        ${!mismatch && !(ms && S.readings.length) ? `<p class="small">${!ms ? 'Choose the manuscript first, then add the reading files your readers sent.' : 'Add at least one reading file to write the notes in.'}</p>` : ''}
         ${mismatch ? '<p class="error">A reading was made on a different text than this manuscript, so its notes would land on the wrong paragraphs. Choose the same file the reader read.</p>' : ''}
       </div></section>`;
     $('#pick').onclick = async () => { const r = await api.invoke('manuscript:open'); if (r) { S.manuscript = r; render(); } };
@@ -477,7 +481,7 @@ async function replayBoot() {
   let res;
   try { res = await fetch(src, { cache: 'no-store' }); } catch { res = null; }
   if (!res || !res.ok) {
-    empty('This page replays a recorded reading', 'No recorded reading is published here yet. When one is, this page plays it back through the same scoring code as the app: every flag, every note and the numbers, with no camera and no key.');
+    empty('No recorded reading here yet', 'This page replays a real reading once one is published. When one is, this page plays it back through the same scoring code as the app: every flag, every note and the numbers, with no camera and no key.');
     return;
   }
   let s;
