@@ -536,8 +536,8 @@ function writer() {
         comments.push({
           para: 0, author: d.reader.name,
           text: `Unskipped summary from ${d.reader.name}: read in ${((d.readEnd - d.readStart) / 60000).toFixed(1)} min, face readable ${Math.round((st.readableShare ?? 0) * 100)}% of the time. ` +
-            `Smiled at ${counts.amused || 0} paragraphs, gripped by ${counts.gripped || 0}, may have drifted at ${counts.drifting || 0}, no reading for ${counts['no-reading'] || 0}. ` +
-            `They marked ${d.marks.got.length} paragraphs as "got me" and ${d.marks.lost.length} as "lost me" themselves.`,
+            `Paragraphs: smiled at ${counts.amused || 0}, gripped by ${counts.gripped || 0}, may have drifted at ${counts.drifting || 0}, no reading for ${counts['no-reading'] || 0}. ` +
+            `They marked ${d.marks.got.length} paragraph${d.marks.got.length === 1 ? '' : 's'} as "got me" and ${d.marks.lost.length} as "lost me" themselves.`,
         });
         for (const n of d.notes) {
           const own = d.marks.got.includes(n.i) ? ' They marked this one "got me" themselves.' : d.marks.lost.includes(n.i) ? ' They marked this one "lost me" themselves.' : '';

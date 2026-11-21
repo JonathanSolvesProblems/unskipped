@@ -69,6 +69,20 @@ npm run check   # results, then fail if any number in post/devto.md disagrees wi
 
 No video or image is recorded or sent. The SDK runs on the reader's machine with telemetry off, and contacts Presage only to check the key and count usage. Reading files contain only the notes the reader kept, their own marks and summary numbers; raw signal samples are included only if they tick a box that is off by default. There is no server. See the Consent and Data Handling section of the DEV post.
 
+## Sources
+
+Every quote and number in the demo video and the post, each one opened and read:
+
+- Beta readers' vague praise ("I liked it. It's good." ... "it tells me nothing"): Melissa Bowersock, Indies Unlimited, May 27, 2014. https://indiesunlimited.com/2014/05/27/open-letter-to-beta-readers/
+- "Try to leave out the part that readers tend to skip": Elmore Leonard, The New York Times, July 16, 2001, traced by Quote Investigator. https://quoteinvestigator.com/2017/11/14/skip/
+- Telemetry off means the SDK "transmits nothing": Presage SmartSpectra docs. https://smartspectra.presagetech.com/docs/telemetry-and-privacy
+- Pulse, blinks and expressions as SDK metrics: Presage SmartSpectra Node.js metrics docs. https://smartspectra.presagetech.com/docs/nodejs/metrics.md
+- Readers blink more when their minds wander: Smilek, Carriere and Cheyne, Psychological Science, 2010 (University of Waterloo release via ScienceDaily, April 30, 2010). https://www.sciencedaily.com/releases/2010/04/100429153959.htm
+- 2 of 4 marked paragraphs flagged by the camera, 3 of 4 by reading time: measured, `results/summary.json`.
+- Pulse within 5 bpm of a fingertip oximeter on 29 of 29 readings, mean gap 1 bpm: measured, `results/pulse-check.json`.
+
+The full list, including the story text and the SDK issue, is in [post/sources.md](post/sources.md).
+
 ## License
 
 MIT. Saki's "The Open Window" (1914) and the Austen sample are in the public domain; the Saki text is from Wikisource.

@@ -4,11 +4,12 @@ Every number and quotation in the post, the README and the app traces to one of 
 
 ## Published
 
+- Vague praise from beta readers: Melissa Bowersock, "Open Letter to Beta-Readers", Indies Unlimited, May 27, 2014: "I liked it. It's good." ... "it tells me nothing". https://indiesunlimited.com/2014/05/27/open-letter-to-beta-readers/
 - Elmore Leonard, "Easy on the Adverbs, Exclamation Points and Especially Hooptedoodle", The New York Times, Writers on Writing, July 16, 2001, p. E1. Rule 10: "Try to leave out the part that readers tend to skip." Traced by Quote Investigator: https://quoteinvestigator.com/2017/11/14/skip/
 - Saki (H. H. Munro), "The Open Window", in Beasts and Super-Beasts, 1914. Public domain. Text from Wikisource: https://en.wikisource.org/wiki/Beasts_and_Super-Beasts/The_Open_Window
 - Jane Austen, Pride and Prejudice, 1813, chapter 1 (sample page on the home screen). Public domain.
 - Presage SmartSpectra documentation, Node.js SDK and metrics: https://smartspectra.presagetech.com/docs/nodejs and https://smartspectra.presagetech.com/docs/nodejs/metrics.md (pulse rate window, metric bundles, validation codes).
-- Presage SmartSpectra, Telemetry and Privacy: https://smartspectra.presagetech.com/docs/telemetry-and-privacy.md ("the SDK starts no telemetry session and transmits nothing" with telemetry off).
+- Presage SmartSpectra, Telemetry and Privacy: https://smartspectra.presagetech.com/docs/telemetry-and-privacy ("the SDK starts no telemetry session and transmits nothing" with telemetry off).
 - SmartSpectra GitHub issue #18 (cardio bundle on Node 3.4.0 to 3.5.0; requesting PULSE_RATE alone as the workaround): https://github.com/Presage-Security/SmartSpectra/issues/18
 - Blinks and mind wandering: Smilek, Carriere and Cheyne, "Out of mind, out of sight: eye blinking as indicator and embodiment of mind wandering", Psychological Science 21(6), 2010, doi:10.1177/0956797610368063. Fifteen readers blinked more often when their minds wandered from the passage than when they were on task (University of Waterloo release, via ScienceDaily, April 29, 2010: https://www.sciencedaily.com/releases/2010/04/100429153959.htm). A small study; the post says so.
 - Blinks and attention to a story: Nakano, Yamamoto, Kitajo, Takahashi and Kitazawa, "Synchronization of spontaneous eyeblinks while viewing video stories", Proceedings of the Royal Society B 276(1673), 2009, pp. 3635 to 3644, doi:10.1098/rspb.2009.0828 (open access: https://pmc.ncbi.nlm.nih.gov/articles/PMC2817301). Viewers' blinks fell together at low-attention moments of a story (the end of an action, the main character off screen), as if timed not to miss what mattered.
