@@ -56,7 +56,9 @@ app.on('window-all-closed', async () => { await stopCapture(); app.quit(); });
 
 const send = (channel, payload) => { if (win && !win.isDestroyed()) win.webContents.send(channel, payload); };
 
-ipcMain.handle('env:info', () => ({ hasKey: !!apiKey(), cameras: listCameras(), sdk: sdkVersion() }));
+// UNSKIPPED_RESEARCH=1: a study run (my graded read and controls), where the raw samples are needed,
+// so the review screen starts with the raw-samples box ticked and says why. Off for normal readers.
+ipcMain.handle('env:info', () => ({ hasKey: !!apiKey(), cameras: listCameras(), sdk: sdkVersion(), research: !!process.env.UNSKIPPED_RESEARCH }));
 
 ipcMain.handle('capture:start', (_e, { cameraId }) => {
   const key = apiKey();

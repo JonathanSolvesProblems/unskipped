@@ -409,7 +409,7 @@ function review(s, { replay = false } = {}) {
       ${replay ? '' : `
       <div class="send on-cloth">
         <button class="btn" id="send">Send the kept notes to the writer</button>
-        <label><input type="checkbox" id="raw"> Also include the raw signal samples, for research. Off by default.</label>
+        <label><input type="checkbox" id="raw"${S.env?.research ? ' checked' : ''}> Also include the raw signal samples, for research. ${S.env?.research ? 'Ticked because this is a study run.' : 'Off by default.'}</label>
       </div>`}
       <div class="slip note-slip" id="note"><h2>Select a flag</h2><p class="small">Each flag says what the camera saw on that paragraph and how sure it was.</p></div>
     </section>
