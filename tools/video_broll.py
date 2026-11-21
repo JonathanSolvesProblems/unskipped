@@ -139,7 +139,31 @@ def noreading(page):
     page.wait_for_timeout(4500)
 
 
+def open_notes(session, paras, gaps, hold):
+    """Frame paragraph paras[0] on the replay page, then open each flag's note in turn, gaps[k]
+    ms apart, timed to the narration naming that colour. Ready time = the first click."""
+    def run(page):
+        page.goto(LIVE + session, wait_until="load", timeout=60000)
+        page.wait_for_selector(".verdict h1", timeout=30000)
+        page.evaluate("document.documentElement.style.zoom = '1.5'")   # 1280-wide layout, recorded sharp at 1920
+        page.wait_for_timeout(1200)
+        page.evaluate(f"""() => {{ const el = document.querySelector('.annot .para[data-i="{paras[0]}"]');
+            scrollTo(0, el.getBoundingClientRect().top + scrollY - innerHeight * 0.3); }}""")
+        page.wait_for_timeout(1500)
+        ready = time.monotonic() - 0.3      # record() adds 0.3 back: ready lands on the first click
+        for k, i in enumerate(paras):
+            page.locator(f'.annot .flag[data-i="{i}"]').click(force=True)
+            page.wait_for_timeout(gaps[k] if k < len(gaps) else hold)
+        return ready
+    return run
+
+
 SHOTS = {
+    # yellow (smiled, paragraph 21) on "a smile leaves a yellow flag", pink (pulse rose 7.2 bpm,
+    # paragraph 22) on "pulse up": the graded read
+    "b05-colors": (open_notes("", [20, 21], [1950], 4000), None),
+    # blue (blinked at 228% of their usual rate): the second controls session, paragraph 3
+    "b08-blue": (open_notes("?session=../../results/sessions/controls2.json", [2], [], 4000), None),
     "b01-source-beta": (source_beta, None),
     "b02-source-leonard": (source_leonard, None),
     "b04-source-telemetry": (source_telemetry, None),
