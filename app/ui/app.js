@@ -235,39 +235,50 @@ function read() {
   view.innerHTML = `<section class="reading">
     <article class="sheet page" id="page">
       <h1>${esc(s.title)}</h1>${s.byline ? `<div class="byline">${esc(s.byline)}</div>` : ''}
-      ${s.paragraphs.map((p, i) => `<p data-i="${i}">${esc(p.text)}</p>`).join('')}
+      <p class="read-hint">Press <kbd>Space</kbd> or scroll for the next paragraph, <kbd>↑</kbd> to go back. Paragraphs ahead stay faded until you reach them.</p>
+      ${s.paragraphs.map((p, i) => `<p data-i="${i}" class="ahead">${esc(p.text)}</p>`).join('')}
     </article>${railHtml({ stop: true })}</section>`;
   window.scrollTo(0, 0);
   s.readStart = now();
   const paras = [...view.querySelectorAll('#page p[data-i]')];
+  // Guided reading: the app moves one paragraph at a time, so it always knows which paragraph is
+  // being read. A pilot read with free scrolling credited a whole screenful of reading to the one
+  // paragraph that happened to sit on the reading line.
   let current = -1;
-  const track = () => {
-    const y = window.innerHeight * 0.38;
-    // -1 while the title is on the line or the reader is past the last paragraph, so that time
-    // is not credited to the first or last paragraph (the scorer skips -1)
-    let pick = -1;
-    for (const el of paras) {
-      const r = el.getBoundingClientRect();
-      if (r.top <= y && r.bottom >= y) { pick = Number(el.dataset.i); break; }
-      if (r.top > y) { pick = el === paras[0] ? -1 : Number(el.dataset.i); break; }
-    }
-    if (pick !== current) {
-      if (current >= 0) paras[current].classList.remove('focus');
-      current = pick;
-      if (pick >= 0) paras[pick].classList.add('focus');
-      s.timeline.push({ t: now(), p: pick });
-    }
+  const go = (i) => {
+    i = Math.max(0, Math.min(paras.length - 1, i));
+    if (i === current) return;
+    current = i;
+    paras.forEach((el, k) => { el.classList.toggle('past', k < i); el.classList.toggle('focus', k === i); el.classList.toggle('ahead', k > i); });
+    const r = paras[i].getBoundingClientRect();
+    window.scrollTo({ top: window.scrollY + r.top - window.innerHeight * 0.34, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    s.timeline.push({ t: now(), p: i });
   };
   const page = $('#page');
   const placeLine = () => { const r = page.getBoundingClientRect(); readline.style.left = `${r.left}px`; readline.style.width = `${r.width}px`; };
   placeLine(); window.onresize = placeLine;
-  track();
-  window.onscroll = track;
-  S.focusTimer = setInterval(track, 250);
+  go(0);
+  let wheelAcc = 0, wheelLock = 0;
+  const onWheel = (e) => {
+    e.preventDefault();
+    wheelAcc += e.deltaY;
+    if (Date.now() < wheelLock || Math.abs(wheelAcc) < 40) return;
+    go(current + (wheelAcc > 0 ? 1 : -1));
+    wheelAcc = 0; wheelLock = Date.now() + 450;
+  };
+  const onKey = (e) => {
+    if (e.target.closest('button, input, select, a')) return;
+    if ([' ', 'ArrowDown', 'PageDown', 'j'].includes(e.key)) { e.preventDefault(); go(current + 1); }
+    if (['ArrowUp', 'PageUp', 'k'].includes(e.key)) { e.preventDefault(); go(current - 1); }
+  };
+  window.addEventListener('wheel', onWheel, { passive: false });
+  window.addEventListener('keydown', onKey);
+  paras.forEach((el, k) => { el.onclick = () => go(k); });
+  const leave = () => { window.removeEventListener('wheel', onWheel); window.removeEventListener('keydown', onKey); window.onresize = null; };
   S.railTimer = setInterval(paintRail, 500);
-  $('#done').onclick = async () => { s.readEnd = now(); window.onscroll = null; await stopLive(); marks(); };
+  $('#done').onclick = async () => { s.readEnd = now(); leave(); await stopLive(); marks(); };
   $('#quit').onclick = async () => {
-    window.onscroll = null; await stopLive(); S.session = null;
+    leave(); await stopLive(); S.session = null;
     toast('Stopped. The camera is off and nothing was sent.'); home();
   };
 }
@@ -306,7 +317,15 @@ function marks() {
     el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycle(); } };
   });
   count();
+  let askedEmpty = false;
   $('#save').onclick = async () => {
+    // marks are the grader; ask once before saving none, so a reader does not skip them by accident
+    if (!state.size && !askedEmpty) {
+      askedEmpty = true;
+      $('#count').textContent = 'Nothing marked yet';
+      toast('Click the paragraphs that got you first. Press Save again to continue without marks.', 5000);
+      return;
+    }
     s.marks = {
       savedAt: new Date().toISOString(),
       got: [...state].filter(([, v]) => v === 'got').map(([i]) => i).sort((a, b) => a - b),
