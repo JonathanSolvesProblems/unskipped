@@ -105,14 +105,13 @@ function consent() {
       <label class="agree"><input type="checkbox" id="ok"> I agree to be measured while I read this piece</label>
       <label class="field">Your name, as the writer will see it <input type="text" id="name" placeholder="Your name"></label>
       <label class="field">Camera <select id="cam">${cams.map((c, i) => `<option value="${i}">${esc(c.name)}</option>`).join('')}</select></label>
-      <div class="row"><button class="btn" id="go" disabled>Turn on the camera</button><button class="btn quiet" id="back">Not now</button></div>
+      <div class="row"><button class="btn" id="go" disabled>Turn on the camera</button><button class="link-ink" id="back">Not now</button></div>
       <p class="small" id="why">Tick the box above to turn the camera on.</p>
-      <p class="small">Nothing is measured until you press Start reading, and nothing leaves this laptop until you press Send.</p>
     </div>
   </section>`;
   $('#ok').onchange = (e) => {
     $('#go').disabled = !e.target.checked || !S.env.hasKey || !cams.length;
-    $('#why').textContent = !S.env.hasKey ? 'A Presage key is needed first. The README says how.' : !cams.length ? 'No camera found on this computer.' : e.target.checked ? '' : 'Tick the box above to turn the camera on.';
+    $('#why').textContent = !S.env.hasKey ? 'A Presage key is needed first. The README says how.' : !cams.length ? 'No camera found on this computer.' : e.target.checked ? 'Nothing is measured until you press Start reading, and nothing leaves this laptop until you press Send.' : 'Tick the box above to turn the camera on.';
   };
   $('#back').onclick = home;
   $('#go').onclick = async () => {
@@ -280,7 +279,7 @@ function marks() {
   const state = new Map();
   view.innerHTML = `<section class="marks-wrap">
     <div class="marks-head"><h1>Your marks first</h1>
-    <p class="lede">Before you see any flag, click the paragraphs that got you. Click twice for the ones that lost you, or that you skimmed. Click again to clear.</p></div>
+    <p class="lede">Before you see any flag: click the paragraphs that got you, and click twice for any that lost you.</p></div>
     <article class="sheet markable">${s.paragraphs.map((p, i) => `<p data-i="${i}" tabindex="0" role="button" aria-pressed="false">${esc(p.text)}<span class="vh mark-state"></span></p>`).join('')}</article>
     <section class="marks-side on-cloth" aria-label="Your marks">
       <p class="count" id="count"></p>
@@ -342,6 +341,7 @@ function review(s, { replay = false } = {}) {
       ${replay ? '<p class="replay-note">A real recorded reading, played back through the app’s own scoring. No camera needed.</p>' : ''}
       <h1>${headline}</h1>
       <p class="base">${gm.marked && gm.chance !== null ? `Flags placed at random would find about ${gm.chance} of ${gm.marked}. ` : ''}Time on the page alone found ${gd.found}${gm.marked ? ` of ${gd.marked}` : ''}. ${g.refused.length ? `${cap(numWord(g.refused.length))} paragraph${g.refused.length > 1 ? 's' : ''} had no reading; their notes say why.` : 'Every paragraph had a reading.'} Read in ${minutes} minutes, face readable ${pct(scored.reader.readableShare)} of the time.</p>
+      <p class="edge-key edge-cap">Your chapter, edge on: one block per paragraph, as wide as it is long.</p>
       <nav class="edge" aria-label="The chapter seen from its edge: each paragraph as wide as it is long">
         ${scored.paragraphs.map((n, i) => {
           const f = FLAG[n.camera];
@@ -349,10 +349,9 @@ function review(s, { replay = false } = {}) {
           return `<a href="#p${i}" class="slot ${mark}" style="flex-grow:${Math.max(8, s.paragraphs[i].words)}" data-i="${i}" title="Paragraph ${i + 1}${f ? `: ${MEANING[f]}` : ''}">${f ? `<span class="tip ${f}"></span>` : ''}</a>`;
         }).join('')}
       </nav>
-      <p class="edge-key">The chapter seen from its edge, each paragraph as wide as it is long: a flag where the camera marked it, a pencil tick under the ones you marked.</p>
       <div class="legend legend-row">
         ${['grip', 'smile', 'drift', 'none'].map((f) => `<div><span class="swatch ${f}"></span>${MEANING[f]}</div>`).join('')}
-        <div><span class="swatch pencil"></span>Your own marks: ticks under the strip, a pencil bar beside the text</div>
+        <div><span class="swatch pencil"></span>Your own marks</div>
       </div>
     </div>
     <article class="sheet annot" id="annot">
@@ -392,6 +391,7 @@ function review(s, { replay = false } = {}) {
     $('#note').innerHTML = `<h2>${FLAG[n.camera] ? `<span class="swatch ${FLAG[n.camera]}"></span>` : ''}Paragraph ${i + 1}${kept.has(i) ? '' : ', dropped from what you send'}</h2><p>${esc(lead)}</p>
       <p class="ev">${esc([...ev, own].filter(Boolean).join(' '))}</p>
       ${replay ? '' : '<p class="ev">Click the flag again to drop this note, or to keep it.</p>'}`;
+    $('#note').style.setProperty('--fc', FLAG[n.camera] ? `var(--f-${FLAG[n.camera]})` : 'transparent');
   };
   view.querySelectorAll('.annot .flag').forEach((b) => {
     b.onclick = () => {
@@ -451,7 +451,16 @@ function writer() {
           <button class="btn" id="export" ${ms && S.readings.length && !mismatch ? '' : 'disabled'}>Write the notes into my manuscript</button></div>
         ${!mismatch && !(ms && S.readings.length) ? `<p class="small">${!ms ? 'Choose the manuscript first, then add the reading files your readers sent.' : 'Add at least one reading file to write the notes in.'}</p>` : ''}
         ${mismatch ? '<p class="error">A reading was made on a different text than this manuscript, so its notes would land on the wrong paragraphs. Choose the same file the reader read.</p>' : ''}
-      </div></section>`;
+      </div>
+      <figure class="word-preview" aria-label="Example of what the writer gets">
+        <div class="sheet wp-page">
+          <p>It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.</p>
+          <p><mark>“My dear Mr. Bennet,” said his lady to him one day, “have you heard that Netherfield Park is let at last?”</mark></p>
+          <p>Mr. Bennet replied that he had not.</p>
+        </div>
+        <div class="wp-comment"><b>Reader</b><span>Gripped here (pulse +6 bpm vs their own median).</span></div>
+        <figcaption>Example: each kept note lands as a Word comment on its paragraph, in your own file.</figcaption>
+      </figure></section>`;
     $('#pick').onclick = async () => { const r = await api.invoke('manuscript:open'); if (r) { S.manuscript = r; render(); } };
     $('#add').onclick = async () => {
       const files = await api.invoke('file:open-json', { title: 'Add reading files', dir: 'readings' });
@@ -502,7 +511,7 @@ async function replayBoot() {
   let res;
   try { res = await fetch(src, { cache: 'no-store' }); } catch { res = null; }
   if (!res || !res.ok) {
-    empty('No recorded reading here yet', 'This page replays a real reading once one is published. When one is, this page plays it back through the same scoring code as the app: every flag, every note and the numbers, with no camera and no key.');
+    empty('No recorded reading here yet', 'Once one is published, this page plays it back through the app’s own scoring, with no camera needed.');
     return;
   }
   let s;
