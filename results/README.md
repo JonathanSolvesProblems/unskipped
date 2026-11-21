@@ -22,6 +22,26 @@ Notes: no-reading 27, brief 2. No reading: paragraph 1 (you were talking); parag
 
 Reader baselines: pulse median 79.8 bpm, 0 blinks a minute, 280 ms a word, face readable 11% of the time. 349 confident pulse samples; median 30 fps.
 
+## controls2
+
+The Open Window, read by jonathansolvesproblems in 2 min (29 paragraphs). Marks saved 2026-11-21T20:51:21.173Z; review opened 2026-11-21T20:51:21.190Z.
+
+| Against the reader's own "got me" marks (3) | Found | By chance | Flagged | Recall | Precision |
+|---|---|---|---|---|---|
+| Camera (gripped or smiled) | 0 | 0.4 | 2 of 14 | 0% | 0% |
+| Time on the page (lingered) | 1 | 0.7 | 7 of 29 | 33% | 14% |
+
+"By chance" is how many marked paragraphs the same number of flags would find if placed at random among the paragraphs that method could judge.
+
+| Against "lost me" marks (0) | Found | Flagged |
+|---|---|---|
+| Camera (drifting) | 0 | 1 |
+| Time on the page (skimmed) | 0 | 5 |
+
+Notes: steady 11, drifting 1, no-reading 2, brief 13, gripped 2. No reading: paragraph 6 (you were talking); paragraph 9 (you looked away).
+
+Reader baselines: pulse median 81.2 bpm, 14 blinks a minute, 113 ms a word, face readable 86% of the time. 146 confident pulse samples; median 30 fps.
+
 ## graded
 
 The Open Window, read by jonathansolvesproblems in 8.2 min (29 paragraphs). Marks saved 2026-11-21T19:40:39.481Z; review opened (not stored; reading sent 2026-11-21T19:41:07.977Z).
@@ -53,4 +73,16 @@ Reader baselines: pulse median 81.6 bpm, 15.5 blinks a minute, 343 ms a word, fa
 | 9 | turned away | no reading: you looked away | no-reading: you were talking | no |
 | 11 | read normally | a reading | no-reading: you were talking | no |
 | 12 | read normally | a reading | no-reading: you were talking | no |
+
+## Planted controls: controls2
+
+2 of 3 planted paragraphs refused with the right reason; 2 of 2 normally read paragraphs got a reading.
+
+| Paragraph | Planted | Expected | Got | Pass |
+|---|---|---|---|---|
+| 3 | looked at the phone | no reading: you looked away | drifting | no |
+| 6 | read aloud | no reading: you were talking | no-reading: you were talking | yes |
+| 9 | turned away | no reading: you looked away | no-reading: you looked away | yes |
+| 11 | read normally | a reading | brief: too brief to read a signal | yes |
+| 12 | read normally | a reading | gripped | yes |
 
