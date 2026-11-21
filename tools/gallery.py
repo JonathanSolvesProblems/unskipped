@@ -128,7 +128,7 @@ def slides(s):
         ("4-marks", "marks", "The reader marks their own moments first", "Unskipped, marks screen",
          "Before any result is shown, the reader marks what got them and what lost them. Those marks are the grader."),
         ("5-result", "result", result_head, src, result_cap),
-        ("5b-pulse", "pulse", "The webcam pulse, checked against a fingertip sensor", "LOOKEE A310 oximeter, filmed beside the run", pulse_cap),
+        ("5b-pulse", "pulse", "The webcam pulse, checked against a fingertip sensor", "Measured, LOOKEE A310 oximeter", pulse_cap),
         ("6-refusal", "refusal", "When it cannot tell, it says so", "Recorded session results/sessions/controls2.json, scored by src/score.js", refusal_cap),
         ("7-word", "word", "The notes land in the writer's own manuscript", "Exported .docx, opened in Microsoft Word",
          "Every note the reader kept becomes a comment on its paragraph, signed with the reader's name."),
