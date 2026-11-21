@@ -130,8 +130,8 @@ def slides(s):
         ("5-result", "result", result_head, src, result_cap),
         ("5b-pulse", "pulse", "The webcam pulse, checked against a fingertip sensor", "LOOKEE A310 oximeter, filmed beside the run", pulse_cap),
         ("6-refusal", "refusal", "When it cannot tell, it says so", "Recorded session results/sessions/controls2.json, scored by src/score.js", refusal_cap),
-        ("7-word", "word", "The notes land in the writer's own manuscript", "Exported .docx, opened in Google Docs",
-         "Every note the reader kept becomes a comment on its paragraph, next to the writer's own comments."),
+        ("7-word", "word", "The notes land in the writer's own manuscript", "Exported .docx, opened in Microsoft Word",
+         "Every note the reader kept becomes a comment on its paragraph, signed with the reader's name."),
     ]
     has_controls = (ROOT / "results" / "sessions" / "controls2.json").exists()
     return [x for x in plan if x[1] != "refusal" or has_controls]
