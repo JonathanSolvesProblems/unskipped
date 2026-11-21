@@ -57,6 +57,17 @@ To write the notes into a manuscript: **I'm the writer**, choose the manuscript,
 
 On Windows 11 this is usually Smart App Control. The SmartSpectra SDK's DLLs are not code-signed (SDK 3.5.0), and with Smart App Control **On** Windows refuses to load them (Windows error 4551; Event Viewer, Microsoft-Windows-CodeIntegrity/Operational, events 3077 and 3033 naming `smartspectra_capi.dll`). It has no per-file exception, so the only fix on that machine is Windows Security > App & browser control > Smart App Control > Off. Recent Windows 11 updates let you turn it back on from the same screen. Machines with it Off or in evaluation mode, and macOS and Linux, are not affected. To see Unskipped without running it, use the [replay page](https://jonathansolvesproblems.github.io/unskipped/).
 
+## Screens
+
+In the order of the demo video. Numbers on the slides come from `results/summary.json` and `results/pulse-check.json` (`py tools/gallery.py` re-renders them).
+
+| | |
+|---|---|
+| <img src="post/img/1-home.png" width="420" alt="Home screen"><br>A beta reader's reactions land in the writer's margin as page flags, read by Presage SmartSpectra on the reader's laptop. | <img src="post/img/2-consent.png" width="420" alt="Consent screen"><br>What the camera reads, that video never leaves the laptop, telemetry off, and that the reader approves every note. |
+| <img src="post/img/3-read.png" width="420" alt="Reading screen"><br>One paragraph at a time, so the app knows which one is read; live pulse and blinks from the laptop webcam beside it. | <img src="post/img/6-refusal.png" width="420" alt="No reading when it cannot tell"><br>Planted controls: 2 of 3 planted paragraphs refused with the right reason, 2 of 2 normal ones read. |
+| <img src="post/img/4-marks.png" width="420" alt="Marks screen"><br>Before any result is shown, the reader marks what got them and what lost them. Those marks are the grader. | <img src="post/img/5-result.png" width="420" alt="Graded result"><br>Graded against the reader's own marks. Random flags would find 1.5; time on the page alone found 3 of 4. |
+| <img src="post/img/5b-pulse.png" width="420" alt="Webcam pulse against a fingertip oximeter"><br>29 of 29 readings within 5 bpm of the oximeter, mean gap 1 bpm. One person, one sitting, pulse rate only. | <img src="post/img/7-word.png" width="420" alt="Notes as Word comments"><br>Every note the reader kept becomes a comment on its paragraph, signed with the reader's name. |
+
 ## Checks
 
 ```bash
