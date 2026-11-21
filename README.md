@@ -13,6 +13,10 @@ The reader marks the paragraphs that got them before seeing any flag, reviews ev
 
 Entry for the [DEV Presage SmartSpectra SDK Challenge](https://dev.to/challenges/presage-2026-11-04), November 2026.
 
+- **Demo video (1:26):** https://www.youtube.com/watch?v=i67Ub1b6o5w
+- **Try it with no camera and no key:** the [replay page](https://jonathansolvesproblems.github.io/unskipped/) plays back my real recorded reading through the same scoring code.
+- **Write-up:** [the blog post](https://jonathanandrei.com/blog/unskipped-beta-reader-page-flags-presage-smartspectra/) on how it works and what it measured.
+
 ## How to run it
 
 Needs Windows 11 (x64), macOS on Apple Silicon or Linux x64, Node 20 or newer, and a webcam that gives 25 fps or more (the built-in webcam on my Windows laptop gave 29.9).
