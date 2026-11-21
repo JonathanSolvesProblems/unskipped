@@ -138,6 +138,8 @@ def reader_flow(browser, base):
     check("send: reading saved with the reader's name", saved["reader"]["name"] == "Test reader")
     check("send: dropped note left out", len(saved["notes"]) == max(0, n - 1), f"{len(saved['notes'])} notes, {n} flags")
     check("send: raw samples off by default", saved["raw"] is None)
+    page.wait_for_function("window.__cleared >= 1", timeout=5000)
+    check("send: the crash backup is deleted once the reading is sent", True)
     check("send: marks saved before review opened", saved["marks"]["savedAt"] <= saved["review"]["openedAt"], str(saved.get("review")))
     expect(page.locator("h1")).to_contain_text("See where your reader stopped caring", timeout=5000)
     # writer path
@@ -186,6 +188,7 @@ def stop_while_reading(browser, base):
     expect(page.locator("h1")).to_contain_text("See where your reader stopped caring")
     check("read: Stop turns the camera off and returns home", True)
     check("read: Stop sends nothing", page.evaluate("window.__saved === undefined"))
+    check("read: Stop deletes the crash backup", page.evaluate("window.__cleared >= 1"))
     check("stop flow: no console errors", not errors, "; ".join(errors[:3]))
     page.close()
 

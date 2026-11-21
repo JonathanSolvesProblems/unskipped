@@ -47,6 +47,7 @@ export const api = {
       case 'file:open-json': return window.__saved ? [{ path: 'readings/mock.reading.json', data: window.__saved }] : [];
       case 'docx:export': window.__exported = p; return 'layout-check (reader notes).docx';
       case 'session:backup': window.__backups = (window.__backups || 0) + 1; return null;
+      case 'session:clear': window.__cleared = (window.__cleared || 0) + 1; return null;
       default: return null;
     }
   },

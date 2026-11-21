@@ -302,6 +302,7 @@ function read() {
   $('#quit').onclick = async () => {
     if (left) return;
     leave(); await stopLive(); S.session = null;
+    await api.invoke('session:clear'); // the crash backup goes with the reading
     toast('Stopped. The camera is off and nothing was sent.'); home();
   };
 }
@@ -481,7 +482,7 @@ function review(s, { replay = false } = {}) {
     };
     const slug = `${s.title}.${name}`.toLowerCase().replace(/[^a-z0-9.]+/g, '-');
     const p = await api.invoke('file:save-json', { suggested: `${slug}.reading.json`, dir: 'readings', json: JSON.stringify(reading, null, 1) });
-    if (p) { toast(`Saved. Send this file to the writer: ${p}`, 6000); setTimeout(home, 1800); }
+    if (p) { await api.invoke('session:clear'); toast(`Saved. Send this file to the writer: ${p}`, 6000); setTimeout(home, 1800); }
   };
 }
 

@@ -41,6 +41,14 @@ To write the notes into a manuscript: **I'm the writer**, choose the manuscript,
 
 **No camera or key?** The replay page plays back a real recorded reading through the same scoring code: open `app/ui/index.html` from a local web server (`npx http-server .` then `/app/ui/`), or the hosted copy linked from the DEV post.
 
+### Notes on the SDK from building this (SmartSpectra Node SDK 3.5.0, Windows 11 laptop webcam)
+
+- The built-in webcam held 29.9 fps, enough for pulse.
+- Pulse needs the upper chest in frame as well as the face, and about 16 seconds of steady picture before the first value. The settle screen shows a head-and-shoulders outline for this.
+- Requesting the full cardio bundle gave no pulse at all on this machine; `PULSE_RATE` alone worked (the same thing is reported in SmartSpectra issue #18).
+- The SDK's own validation kept reporting a readable face while I glanced down at my phone, so Unskipped also reads head turn and tilt from the face mesh.
+- Details and the test runs: `results/sdk-notes.md`.
+
 ### If `npm start` says "could not load packaged runtime ... smartspectra_capi.dll"
 
 On Windows 11 this is usually Smart App Control. The SmartSpectra SDK's DLLs are not code-signed (SDK 3.5.0), and with Smart App Control **On** Windows refuses to load them (Windows error 4551; Event Viewer, Microsoft-Windows-CodeIntegrity/Operational, events 3077 and 3033 naming `smartspectra_capi.dll`). It has no per-file exception, so the only fix on that machine is Windows Security > App & browser control > Smart App Control > Off. Recent Windows 11 updates let you turn it back on from the same screen. Machines with it Off or in evaluation mode, and macOS and Linux, are not affected. To see Unskipped without running it, use the [replay page](https://jonathansolvesproblems.github.io/unskipped/).

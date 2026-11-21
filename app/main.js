@@ -61,15 +61,19 @@ ipcMain.handle('env:info', () => ({ hasKey: !!apiKey(), cameras: listCameras(), 
 ipcMain.handle('capture:start', (_e, { cameraId }) => {
   const key = apiKey();
   if (!key) throw new Error('No Presage API key. Put PRESAGE_API_KEY=... in .env');
-  return startCapture({ apiKey: key, cameraId, send, debugDir: tmpDir });
+  // raw SDK packets are written only when debugging (UNSKIPPED_DEBUG=1), never in normal use
+  return startCapture({ apiKey: key, cameraId, send, debugDir: process.env.UNSKIPPED_DEBUG ? tmpDir : null });
 });
 ipcMain.handle('capture:stop', () => stopCapture());
 
-// a rolling backup of the live session, so a crash does not waste measured credits
+// A rolling backup of the live session, so a crash does not lose a reading. It lives only while a
+// reading is in progress: the app deletes it when the reading is sent or stopped (session:clear).
+const backupFile = path.join(tmpDir, 'live-session.json');
 ipcMain.handle('session:backup', (_e, json) => {
   fs.mkdirSync(tmpDir, { recursive: true });
-  fs.writeFileSync(path.join(tmpDir, 'live-session.json'), json);
+  fs.writeFileSync(backupFile, json);
 });
+ipcMain.handle('session:clear', () => { fs.rmSync(backupFile, { force: true }); });
 
 ipcMain.handle('manuscript:open', async () => {
   const r = await dialog.showOpenDialog(win, {
