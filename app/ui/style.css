@@ -371,3 +371,42 @@ input[type=text] { border-color: var(--ink-2); }
   .settle-cam .readout .k:not(:first-child) { margin-left: 16px; }
   .marks-side { grid-template-columns: 1fr; }
 }
+
+/* ---------- round 6 ---------- */
+/* a link styled as a button is laid out like one */
+.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+/* disabled: an empty outline that reads as "not yet", never a muddy grey fill */
+.btn:disabled, .btn:disabled:hover { opacity: 1; background: transparent; color: #8a918c; box-shadow: inset 0 0 0 1.5px var(--rule); }
+.on-cloth .btn:disabled { color: rgba(238,242,238,.5); box-shadow: inset 0 0 0 1.5px rgba(238,242,238,.22); }
+.small { font-size: 14px; }
+/* marks: choosing is stronger than hovering */
+.markable { padding-top: 34px; }
+.markable p:hover { background: rgba(26,31,28,.025); }
+.markable p.got, .markable p.lost { background: rgba(26,31,28,.04); box-shadow: inset 4px 0 0 var(--ink); }
+.markable p.lost { box-shadow: inset 4px 0 0 var(--ink), inset 7px 0 0 var(--paper), inset 10px 0 0 var(--ink); }
+.markable p.got::after, .markable p.lost::after { color: var(--ink); font-weight: 700; }
+.markable p.lost::after { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+/* review: readable ticks, a plain strip, the note wears its flag colour */
+.edge .slot { background: var(--paper); }
+.edge .slot.got::after, .edge .slot.lost::after { width: 3px; height: 10px; bottom: -14px; }
+.edge .slot.lost::after { box-shadow: 5px 0 0 var(--cloth-ink); margin-left: -3px; }
+.note-slip h2 .swatch { width: 14px; height: 10px; margin-right: 8px; }
+/* settle: the waiting message sits under the outline, not across it */
+.cam-wait { place-items: end center; padding-bottom: 7%; }
+/* read: stop well apart from finishing */
+.rail .link { margin-left: 40px; }
+/* writer: the table's first column lines up with its heading */
+table.files td:first-child { padding-left: 0; }
+/* home: breathing room under the footer */
+.foot { padding-bottom: 24px; }
+@media (max-width: 560px) {
+  #crumbs span.on i { display: none; }
+  #crumbs span.on::before { content: attr(data-step) " · "; color: var(--cloth-mute); font-weight: 400; }
+  #readline { display: none; }
+  .rail .link { margin-left: 24px; }
+  .markable p.got, .markable p.lost { padding-top: 26px; }
+  .markable p.got::after, .markable p.lost::after { position: absolute !important; top: 6px; left: 14px; margin: 0; }
+  .legend-row { display: grid; grid-template-columns: 1fr; gap: 6px; }
+  .sample { margin-right: 56px; }
+}
+@media (max-width: 980px) { .marks-side { box-shadow: 0 -10px 16px -8px rgba(0,0,0,.45); } }

@@ -17,7 +17,7 @@ const ART = 'art/';
 const STEPS = ['Consent', 'Settle', 'Read', 'Your marks', 'Review'];
 function crumbs(on) {
   const k = STEPS.indexOf(on);
-  $('#crumbs').innerHTML = on ? STEPS.map((s, i) => `<span class="${i === k ? 'on' : i < k ? 'done' : ''}" ${i === k ? 'aria-current="step"' : ''}><i>${i + 1}</i>${s}</span>`).join('') : '';
+  $('#crumbs').innerHTML = on ? STEPS.map((s, i) => `<span class="${i === k ? 'on' : i < k ? 'done' : ''}" data-step="Step ${i + 1} of ${STEPS.length}" ${i === k ? 'aria-current="step"' : ''}><i>${i + 1}</i>${s}</span>`).join('') : '';
 }
 function toast(msg, ms = 2800) {
   const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
@@ -95,7 +95,7 @@ function consent() {
       <p class="lede">You are about to read <em>${esc(ms.title)}</em>, ${ms.paragraphs.length} paragraphs, about ${minutes} minutes.</p>
       <dl>
         <dt>What is read</dt><dd>Your pulse, blinks and smiles, whether you are talking, and whether your face is turned to the page. Presage SmartSpectra works these out from the camera picture.</dd>
-        <dt>Where</dt><dd>On this computer. No video or picture is recorded or sent. The SDK contacts Presage only to check the key and count usage. Its telemetry is switched off.</dd>
+        <dt>Where</dt><dd>On this computer. No video or picture is recorded or sent. Presage’s software only checks its licence key, with its usage reporting switched off.</dd>
         <dt>What the writer gets</dt><dd>Only the notes you keep at the end, with your name. You can keep none.</dd>
         <dt>Your own marks</dt><dd>You mark what got you and lost you before you see any flag.</dd>
         <dt>Not about health</dt><dd>The readings describe how you read one piece, nothing about your health. Stop at any time; closing the window turns the camera off.</dd>
@@ -339,9 +339,9 @@ function review(s, { replay = false } = {}) {
     : 'You marked nothing as got me. Here is what the camera noticed';
   view.innerHTML = `<section class="review">
     <div class="verdict">
-      ${replay ? '<p class="replay-note">A recorded reading, replayed from its session file through the same scoring code. No camera, no key.</p>' : ''}
+      ${replay ? '<p class="replay-note">A real recorded reading, played back through the app’s own scoring. No camera needed.</p>' : ''}
       <h1>${headline}</h1>
-      <p class="base">${gm.marked && gm.chance !== null ? `Flags placed at random would find about ${gm.chance} of ${gm.marked}. ` : ''}Time on the page alone found ${gd.found}${gm.marked ? ` of ${gd.marked}` : ''}. ${g.refused.length ? `${cap(numWord(g.refused.length))} paragraph${g.refused.length > 1 ? 's' : ''} had no reading, and say so.` : 'Every paragraph had a reading.'} Read in ${minutes} minutes, face readable ${pct(scored.reader.readableShare)} of the time.</p>
+      <p class="base">${gm.marked && gm.chance !== null ? `Flags placed at random would find about ${gm.chance} of ${gm.marked}. ` : ''}Time on the page alone found ${gd.found}${gm.marked ? ` of ${gd.marked}` : ''}. ${g.refused.length ? `${cap(numWord(g.refused.length))} paragraph${g.refused.length > 1 ? 's' : ''} had no reading; their notes say why.` : 'Every paragraph had a reading.'} Read in ${minutes} minutes, face readable ${pct(scored.reader.readableShare)} of the time.</p>
       <nav class="edge" aria-label="The chapter seen from its edge: each paragraph as wide as it is long">
         ${scored.paragraphs.map((n, i) => {
           const f = FLAG[n.camera];
@@ -352,7 +352,7 @@ function review(s, { replay = false } = {}) {
       <p class="edge-key">The chapter seen from its edge, each paragraph as wide as it is long: a flag where the camera marked it, a pencil tick under the ones you marked.</p>
       <div class="legend legend-row">
         ${['grip', 'smile', 'drift', 'none'].map((f) => `<div><span class="swatch ${f}"></span>${MEANING[f]}</div>`).join('')}
-        <div><span class="swatch pencil"></span>Your own marks, in pencil on the left</div>
+        <div><span class="swatch pencil"></span>Your own marks: ticks under the strip, a pencil bar beside the text</div>
       </div>
     </div>
     <article class="sheet annot" id="annot">
@@ -389,7 +389,7 @@ function review(s, { replay = false } = {}) {
     const lead = { amused: 'Smiled here.', gripped: 'Gripped here.', drifting: 'May have drifted here.',
       'no-reading': `No reading: ${n.reason}. Unskipped does not guess.`, brief: 'Too brief to read a signal.',
       unseen: 'Never on the reading line.' }[n.camera] || 'Nothing stood out here.';
-    $('#note').innerHTML = `<h2>Paragraph ${i + 1}${kept.has(i) ? '' : ', dropped from what you send'}</h2><p>${esc(lead)}</p>
+    $('#note').innerHTML = `<h2>${FLAG[n.camera] ? `<span class="swatch ${FLAG[n.camera]}"></span>` : ''}Paragraph ${i + 1}${kept.has(i) ? '' : ', dropped from what you send'}</h2><p>${esc(lead)}</p>
       <p class="ev">${esc([...ev, own].filter(Boolean).join(' '))}</p>
       ${replay ? '' : '<p class="ev">Click the flag again to drop this note, or to keep it.</p>'}`;
   };
@@ -444,10 +444,10 @@ function writer() {
       <p class="lede">Choose your manuscript, add the reading files your readers sent, and each kept note becomes a Word comment on its paragraph.</p>
       <div class="sheet">
         <h2>Manuscript</h2>
-        <div class="row" style="margin-top:10px">${ms ? `<span><b>${esc(ms.title)}</b><br><span class="small">${esc(S.manuscript.path)}</span></span><button class="btn quiet" id="pick">Change</button>` : '<button class="btn quiet" id="pick">Choose manuscript</button><span class="small">.docx, .md or .txt</span>'}</div>
+        <div class="row" style="margin-top:10px">${ms ? `<span><b>${esc(ms.title)}</b><br><span class="small">${esc(S.manuscript.path)}</span></span><button class="link-ink" id="pick">Change</button>` : '<button class="btn" id="pick">Choose manuscript</button><span class="small">.docx, .md or .txt</span>'}</div>
         <h2 style="margin-top:28px">Readings</h2>
         <table class="files">${S.readings.map((r) => `<tr><td>${esc(r.data.reader.name)}</td><td>${r.data.notes.length} notes</td><td class="small">${esc(new Date(r.data.sentAt).toLocaleString())}</td><td>${ms && r.data.textHash !== hashText(ms.paragraphs) ? '<span class="error">read a different text than this manuscript</span>' : ''}</td></tr>`).join('') || '<tr><td class="small">None yet</td></tr>'}</table>
-        <div class="row"><button class="btn quiet" id="add">Add reading files</button>
+        <div class="row"><button class="btn${ms && !S.readings.length ? '' : ' quiet'}" id="add">Add reading files</button>
           <button class="btn" id="export" ${ms && S.readings.length && !mismatch ? '' : 'disabled'}>Write the notes into my manuscript</button></div>
         ${!mismatch && !(ms && S.readings.length) ? `<p class="small">${!ms ? 'Choose the manuscript first, then add the reading files your readers sent.' : 'Add at least one reading file to write the notes in.'}</p>` : ''}
         ${mismatch ? '<p class="error">A reading was made on a different text than this manuscript, so its notes would land on the wrong paragraphs. Choose the same file the reader read.</p>' : ''}
