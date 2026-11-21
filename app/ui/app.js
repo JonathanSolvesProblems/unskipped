@@ -372,11 +372,13 @@ function review(s, { replay = false } = {}) {
   const pct = (x) => (x === null || x === undefined ? 'n/a' : `${Math.round(x * 100)}%`);
   const minutes = ((s.readEnd - s.readStart) / 60000).toFixed(1);
   const gm = g.camera.got, gd = g.dwell.got;
+  // on the public replay page the visitor did not mark anything, so the reader is named in the third person
+  const who = replay ? 'The reader' : 'You', whoLower = replay ? 'the reader' : 'you';
   const headline = gm.marked
     ? (gm.marked === 1
-      ? `You marked <span class="n">1</span> paragraph as got me, and the camera ${gm.found ? 'flagged it too' : 'did not flag it'}`
-      : `Of the <span class="n">${gm.marked}</span> paragraphs you marked as got me, the camera flagged <span class="n">${gm.found}</span>`)
-    : 'You marked nothing as got me. Here is what the camera noticed';
+      ? `${who} marked <span class="n">1</span> paragraph as got me, and the camera ${gm.found ? 'flagged it too' : 'did not flag it'}`
+      : `Of the <span class="n">${gm.marked}</span> paragraphs ${whoLower} marked as got me, the camera flagged <span class="n">${gm.found}</span>`)
+    : `${who} marked nothing as got me. Here is what the camera noticed`;
   view.innerHTML = `<section class="review">
     <div class="verdict">
       ${replay ? '<p class="replay-note">A real recorded reading, played back through the app’s own scoring. No camera needed.</p>' : ''}
@@ -417,14 +419,15 @@ function review(s, { replay = false } = {}) {
     view.querySelectorAll('.annot .para.sel').forEach((el) => el.classList.remove('sel'));
     view.querySelector(`.annot .para[data-i="${i}"]`)?.classList.add('sel');
     const e = n.evidence || {};
+    const Y = replay ? 'They' : 'You';
     const ev = [];
-    if (e.pulseDelta !== null && e.pulseDelta !== undefined) ev.push(Math.abs(e.pulseDelta) < 1 ? 'Pulse sat at your median.' : `Pulse ${e.pulseDelta > 0 ? 'rose' : 'fell'} ${Math.abs(e.pulseDelta)} bpm from your median.`);
-    if (Number.isFinite(e.blinkRatio)) ev.push(`You blinked at ${Math.round(e.blinkRatio * 100)}% of your usual rate.`);
-    if (e.smileMs) ev.push(`You smiled for ${(e.smileMs / 1000).toFixed(1)} seconds.`);
-    if (e.dwellRatio) ev.push(Math.abs(e.dwellRatio - 1) < 0.15 ? 'You spent about your usual time per word here.'
-      : e.dwellRatio < 1 ? `You spent ${Math.round(e.dwellRatio * 100)}% of your usual time per word here.`
-      : `You spent ${e.dwellRatio.toFixed(1)} times your usual time per word here.`);
-    const own = s.marks.got.includes(i) ? 'You marked it as got me.' : s.marks.lost.includes(i) ? 'You marked it as lost me.' : '';
+    if (e.pulseDelta !== null && e.pulseDelta !== undefined) ev.push(Math.abs(e.pulseDelta) < 1 ? `Pulse sat at ${Y === 'You' ? 'your' : 'their'} median.` : `Pulse ${e.pulseDelta > 0 ? 'rose' : 'fell'} ${Math.abs(e.pulseDelta)} bpm from ${Y === 'You' ? 'your' : 'their'} median.`);
+    if (Number.isFinite(e.blinkRatio)) ev.push(`${Y} blinked at ${Math.round(e.blinkRatio * 100)}% of ${Y === 'You' ? 'your' : 'their'} usual rate.`);
+    if (e.smileMs) ev.push(`${Y} smiled for ${(e.smileMs / 1000).toFixed(1)} seconds.`);
+    if (e.dwellRatio) ev.push(Math.abs(e.dwellRatio - 1) < 0.15 ? `${Y} spent about ${Y === 'You' ? 'your' : 'their'} usual time per word here.`
+      : e.dwellRatio < 1 ? `${Y} spent ${Math.round(e.dwellRatio * 100)}% of ${Y === 'You' ? 'your' : 'their'} usual time per word here.`
+      : `${Y} spent ${e.dwellRatio.toFixed(1)} times ${Y === 'You' ? 'your' : 'their'} usual time per word here.`);
+    const own = s.marks.got.includes(i) ? `${Y} marked it as got me.` : s.marks.lost.includes(i) ? `${Y} marked it as lost me.` : '';
     // the slip states the finding once; the evidence line carries the numbers (the Word comment keeps both)
     const lead = { amused: 'Smiled here.', gripped: 'Gripped here.', drifting: 'May have drifted here.',
       'no-reading': `No reading: ${n.reason}. Unskipped does not guess.`, brief: 'Too brief to read a signal.',
