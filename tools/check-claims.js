@@ -26,11 +26,23 @@ if (/^https?:/.test(file)) {
 } else {
   post = fs.readFileSync(file, 'utf8');
 }
+// the claims: marked in the text, or (for the published post, where DEV would show markers as
+// text) the words just before each number, from results/post-claims.json
 const re = /<!--claim:([\w.]+)-->([\s\S]*?)<!--\/claim-->/g;
 let m, n = 0, bad = 0;
-while ((m = re.exec(post))) {
+const claims = [];
+while ((m = re.exec(post))) claims.push([m[1], m[2]]);
+if (!claims.length && fs.existsSync('results/post-claims.json')) {
+  const text = post.replace(/\r/g, '');
+  for (const { key, anchor } of JSON.parse(fs.readFileSync('results/post-claims.json', 'utf8'))) {
+    const i = text.indexOf(anchor);
+    const num = i < 0 ? null : text.slice(i + anchor.length).match(/^[\d.]+/);
+    if (!num) { bad++; console.error(`MISSING ${key}: "${anchor}" not followed by a number in the post`); continue; }
+    claims.push([key, num[0].replace(/\.$/, '')]);
+  }
+}
+for (const [key, text] of claims) {
   n++;
-  const [, key, text] = m;
   const val = key.split('.').reduce((o, k) => (o == null ? undefined : o[k]), root);
   let ok;
   if (/%$/.test(text.trim())) ok = typeof val === 'number' && Math.round(val * 100) === Number(text.trim().slice(0, -1));

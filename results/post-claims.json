@@ -1,0 +1,74 @@
+[
+ {
+  "key": "pulsecheck.within5",
+  "anchor": "held up: against a fingertip pulse oximeter, "
+ },
+ {
+  "key": "pulsecheck.pairs",
+  "anchor": "p: against a fingertip pulse oximeter, 29 of "
+ },
+ {
+  "key": "pulsecheck.cameraMean",
+  "anchor": "ined up every 5 seconds: the camera averaged "
+ },
+ {
+  "key": "pulsecheck.sensorMean",
+  "anchor": "he camera averaged 77.1 bpm and the oximeter "
+ },
+ {
+  "key": "pulsecheck.meanAbsDiff",
+  "anchor": "7.1 bpm and the oximeter 77.3, a mean gap of "
+ },
+ {
+  "key": "pulsecheck.within5",
+  "anchor": "the oximeter 77.3, a mean gap of 1 bpm, with "
+ },
+ {
+  "key": "pulsecheck.pairs",
+  "anchor": "imeter 77.3, a mean gap of 1 bpm, with 29 of "
+ },
+ {
+  "key": "graded.camera.got.found",
+  "anchor": "re seeing any flag. The camera's flags found "
+ },
+ {
+  "key": "graded.camera.got.marked",
+  "anchor": " any flag. The camera's flags found 2 of the "
+ },
+ {
+  "key": "graded.camera.got.chance",
+  "anchor": " I marked (flags placed at random would find "
+ },
+ {
+  "key": "graded.dwell.got.found",
+  "anchor": " find 1.5), and time spent on the page found "
+ },
+ {
+  "key": "graded.dwell.got.chance",
+  "anchor": "d time spent on the page found 3 (by chance: "
+ },
+ {
+  "key": "pulsecheck.restingSdBpm",
+  "anchor": "hat's next.** Resting pulse wanders by about "
+ },
+ {
+  "key": "nullcheck.maxFalseGrippedPct",
+  "anchor": "gs a reader with no reaction at all on up to "
+ },
+ {
+  "key": "nullcheck.pulseBars.bpm8",
+  "anchor": "ing pulse). Raising it to 8 bpm cuts that to "
+ },
+ {
+  "key": "controls.controls1.plantedRefused",
+  "anchor": "aphs read normally), my first session caught "
+ },
+ {
+  "key": "controls.controls2.plantedRefused",
+  "anchor": "the SDK's face mesh, a second session caught "
+ },
+ {
+  "key": "controls.controls2.harmlessRead",
+  "anchor": "esh, a second session caught 2 of 3 and read "
+ }
+]
