@@ -317,3 +317,57 @@ input[type=text] { border-color: var(--ink-2); }
   .rail .link { margin-left: 4px; }
 }
 @media (max-width: 560px) { #readline::before { left: 6px; width: 14px; } #readline::after { right: 8px; width: 14px; } }
+
+/* ---------- round 5: layouts on one grid ---------- */
+/* every two-column screen ends at the header's right edge */
+.reading { grid-template-columns: minmax(0, 760px) 300px; justify-content: space-between; }
+.review { grid-template-columns: minmax(0, 780px) 330px; justify-content: space-between; row-gap: 36px; }
+.consent, .settle, .writer, .marks-wrap { margin-top: 2vh; }
+.consent { max-width: none; }
+
+/* settle: the camera is the hero */
+.settle { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 48px; align-items: start; }
+.settle-cam { display: grid; gap: 14px; color: var(--cloth-ink); }
+.cam-frame { position: relative; aspect-ratio: 16 / 9; background: #121a16; border-radius: 2px; overflow: hidden; box-shadow: 0 0 0 1px rgba(238,242,238,.18), var(--sheet-shadow); }
+.cam-frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.cam-wait { position: absolute; inset: 0; display: grid; place-items: center; font-size: 15px; color: var(--cloth-mute); }
+.cam-guide { position: absolute; inset: 6% 0 0; width: 100%; height: 94%; fill: none; stroke: rgba(238,242,238,.42); stroke-width: .6; stroke-dasharray: 2 1.6; pointer-events: none; }
+.settle-cam .readout { grid-template-columns: repeat(3, auto auto); justify-content: start; column-gap: 12px; }
+.settle-cam .readout .k:not(:first-child) { margin-left: 30px; }
+.settle-cam .readout b { text-align: left; }
+.settle-card { padding: 40px 40px 34px; }
+.settle-card h1 { font-size: clamp(28px, 2.6vw, 36px) !important; }
+.settle-card > p { font-family: var(--serif); font-size: 17px; line-height: 1.6; color: var(--ink-2); margin: 16px 0; }
+.settle-card .settle-state { font-family: var(--sans); font-size: 15px; color: var(--ink); font-weight: 600; margin: 22px 0 16px; }
+.link-ink { background: none; border: 0; padding: 6px 2px; color: var(--ink); font-size: 15px; text-decoration: underline; text-decoration-color: rgba(26,31,28,.35); text-underline-offset: 4px; }
+.link-ink:hover { text-decoration-color: currentColor; }
+
+/* marks: page and a side panel, like the read screen */
+.marks-wrap { display: grid; grid-template-columns: minmax(0, 760px) 300px; justify-content: space-between; column-gap: 56px; }
+.marks-wrap .markable, .marks-head { max-width: none; }
+.marks-head { grid-column: 1 / -1; max-width: 62ch; }
+.marks-side { position: sticky; top: 24px; align-self: start; display: grid; gap: 14px; color: var(--cloth-ink); }
+.marks-side .count { font-family: var(--serif); font-size: 24px; margin: 0; font-variant-numeric: lining-nums; }
+.marks-side .small { margin: 0; }
+.mark-key { display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; font-size: 14px; color: var(--cloth-mute); align-items: center; }
+.mark-key .mk { font-weight: 600; color: var(--cloth-ink); padding-left: 10px; box-shadow: inset 3px 0 0 var(--cloth-mute); }
+.mark-key .mk.lost { box-shadow: inset 3px 0 0 var(--cloth-mute), inset 6px 0 0 var(--cloth), inset 8px 0 0 var(--cloth-mute); padding-left: 14px; }
+@media (hover: hover) and (min-width: 561px) {
+  .markable p:not(.got):not(.lost):hover::after { content: "got me?"; position: absolute; left: -64px; top: 6px; width: 50px; text-align: right; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--graphite); opacity: .45; }
+}
+
+/* review: the edge strip spans the page, its key right under it */
+.edge { max-width: none; }
+.legend-row { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 12px; font-size: 14px; }
+
+@media (max-width: 980px) {
+  .settle, .marks-wrap, .reading, .review { grid-template-columns: 1fr; }
+  .marks-side { position: sticky; top: auto; bottom: 0; z-index: 3; background: var(--cloth); padding: 12px 0 14px; border-top: 1px solid rgba(238,242,238,.16); grid-template-columns: 1fr auto; align-items: center; }
+  .marks-side .mark-key, .marks-side .small { display: none; }
+  .marks-side .count { font-size: 17px; }
+}
+@media (max-width: 560px) {
+  .settle-card { padding: 26px 22px; }
+  .settle-cam .readout .k:not(:first-child) { margin-left: 16px; }
+  .marks-side { grid-template-columns: 1fr; }
+}

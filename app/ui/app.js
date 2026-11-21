@@ -198,13 +198,24 @@ function paintRail() {
 // ---------------------------------------------------------------- settle
 function settle() {
   crumbs('Settle'); readline.hidden = true;
-  view.innerHTML = `<section class="reading settle">
-    <div class="sheet page" style="padding-bottom:64px">
+  // the camera is the object on this screen: a large mirror with a head-and-shoulders guide
+  view.innerHTML = `<section class="settle">
+    <div class="settle-cam">
+      <div class="cam-frame">
+        <span class="cam-wait">Starting the camera…</span>
+        <canvas id="preview" width="640" height="360" aria-label="Live camera preview, not recorded"></canvas>
+        <svg class="cam-guide" viewBox="0 0 160 90" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><ellipse cx="80" cy="34" rx="15" ry="19"/><path d="M42 90 C44 66 58 58 80 58 C102 58 116 66 118 90"/></svg>
+      </div>
+      <div class="state" id="status" role="status"></div>
+      <div class="readout" id="readout"></div>
+      <p class="rail-note">Live camera, on this laptop only. Not recorded.</p>
+    </div>
+    <div class="sheet settle-card">
       <h1>Sit so the camera sees your face and the top of your chest</h1>
-      <p>Sit back a little, so the preview shows you down to the collarbones. Light in front of you, not behind. Your first pulse reading comes after about fifteen seconds of a steady picture.</p>
-      <p class="small settle-state" id="settleMsg" role="status">Waiting for a steady pulse</p>
-      <div class="row"><button class="btn" id="start" disabled>Start reading</button><button class="btn quiet" id="stop">Turn the camera off</button></div>
-    </div>${railHtml()}</section>`;
+      <p>Sit back until you fill the outline, down to the collarbones. Light in front of you, not behind. Your first pulse reading comes after about fifteen seconds of a steady picture.</p>
+      <p class="settle-state" id="settleMsg" role="status">Waiting for a steady pulse</p>
+      <div class="row"><button class="btn" id="start" disabled>Start reading</button><button class="link-ink" id="stop">Turn the camera off</button></div>
+    </div></section>`;
   S.session.settleStart = now();
   S.railTimer = setInterval(() => {
     paintRail();
@@ -271,7 +282,12 @@ function marks() {
     <div class="marks-head"><h1>Your marks first</h1>
     <p class="lede">Before you see any flag, click the paragraphs that got you. Click twice for the ones that lost you, or that you skimmed. Click again to clear.</p></div>
     <article class="sheet markable">${s.paragraphs.map((p, i) => `<p data-i="${i}" tabindex="0" role="button" aria-pressed="false">${esc(p.text)}<span class="vh mark-state"></span></p>`).join('')}</article>
-    <div class="dock on-cloth"><button class="btn" id="save">Save my marks and show the flags</button><span class="small" id="count"></span></div>
+    <section class="marks-side on-cloth" aria-label="Your marks">
+      <p class="count" id="count"></p>
+      <div class="mark-key"><span class="mk got">got me</span><span>one click</span><span class="mk lost">lost me</span><span>two clicks</span></div>
+      <button class="btn" id="save">Save my marks and show the flags</button>
+      <p class="small">The camera’s flags appear only after you save.</p>
+    </section>
   </section>`;
   const count = () => {
     const g = [...state.values()].filter((v) => v === 'got').length, l = [...state.values()].filter((v) => v === 'lost').length;
@@ -334,6 +350,10 @@ function review(s, { replay = false } = {}) {
         }).join('')}
       </nav>
       <p class="edge-key">The chapter seen from its edge, each paragraph as wide as it is long: a flag where the camera marked it, a pencil tick under the ones you marked.</p>
+      <div class="legend legend-row">
+        ${['grip', 'smile', 'drift', 'none'].map((f) => `<div><span class="swatch ${f}"></span>${MEANING[f]}</div>`).join('')}
+        <div><span class="swatch pencil"></span>Your own marks, in pencil on the left</div>
+      </div>
     </div>
     <article class="sheet annot" id="annot">
       ${scored.paragraphs.map((n, i) => {
@@ -343,10 +363,6 @@ function review(s, { replay = false } = {}) {
       }).join('')}
     </article>
     <section class="notes" aria-label="Notes on this reading">
-      <div class="legend">
-        ${['grip', 'smile', 'drift', 'none'].map((f) => `<div><span class="swatch ${f}"></span>${MEANING[f]}</div>`).join('')}
-        <div><span class="swatch pencil"></span>Your own marks, in pencil on the left</div>
-      </div>
       <div class="slip note-slip" id="note"><h2>Select a flag</h2><p class="small">Each flag says what the camera saw on that paragraph and how sure it was.</p></div>
       ${replay ? '' : `
       <div class="send on-cloth">
