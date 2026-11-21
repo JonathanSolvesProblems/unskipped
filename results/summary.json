@@ -11,8 +11,945 @@
   "happyConfidence": 50,
   "smileMinMs": 700,
   "minExpectedBlinks": 3,
+  "headTurn": 0.2,
+  "headTilt": 0.1,
   "dwellSlowRatio": 1.5,
   "dwellFastRatio": 0.5
  },
- "sessions": {}
+ "sessions": {
+  "controls1": {
+   "title": "The Open Window",
+   "reader": {
+    "blinkPerMin": 0,
+    "pulseMedian": 79.8,
+    "breathMedian": null,
+    "hrvMedian": null,
+    "msPerWord": 280,
+    "readableShare": 0.11
+   },
+   "paragraphs": 29,
+   "readMinutes": 5,
+   "marksSavedAt": "2026-11-21T20:02:35.755Z",
+   "reviewOpenedAt": null,
+   "marked": {
+    "got": [
+     13,
+     17,
+     19
+    ],
+    "lost": []
+   },
+   "camera": {
+    "got": {
+     "flagged": 0,
+     "marked": 3,
+     "found": 0,
+     "recall": 0,
+     "precision": null,
+     "judgeable": 0,
+     "chance": null
+    },
+    "lost": {
+     "flagged": 0,
+     "marked": 0,
+     "found": 0,
+     "recall": null,
+     "precision": null,
+     "judgeable": 0,
+     "chance": null
+    }
+   },
+   "dwell": {
+    "got": {
+     "flagged": 3,
+     "marked": 3,
+     "found": 0,
+     "recall": 0,
+     "precision": 0,
+     "judgeable": 29,
+     "chance": 0.3
+    },
+    "lost": {
+     "flagged": 10,
+     "marked": 0,
+     "found": 0,
+     "recall": null,
+     "precision": 0,
+     "judgeable": 29,
+     "chance": 0
+    }
+   },
+   "refused": [
+    {
+     "i": 0,
+     "reason": "you were talking"
+    },
+    {
+     "i": 1,
+     "reason": "you were talking"
+    },
+    {
+     "i": 2,
+     "reason": "you were talking"
+    },
+    {
+     "i": 3,
+     "reason": "you were talking"
+    },
+    {
+     "i": 4,
+     "reason": "you were talking"
+    },
+    {
+     "i": 5,
+     "reason": "you were talking"
+    },
+    {
+     "i": 6,
+     "reason": "you were talking"
+    },
+    {
+     "i": 7,
+     "reason": "you were talking"
+    },
+    {
+     "i": 8,
+     "reason": "you were talking"
+    },
+    {
+     "i": 9,
+     "reason": "you were talking"
+    },
+    {
+     "i": 10,
+     "reason": "you were talking"
+    },
+    {
+     "i": 11,
+     "reason": "you were talking"
+    },
+    {
+     "i": 12,
+     "reason": "you were talking"
+    },
+    {
+     "i": 13,
+     "reason": "you were talking"
+    },
+    {
+     "i": 14,
+     "reason": "you were talking"
+    },
+    {
+     "i": 15,
+     "reason": "you were talking"
+    },
+    {
+     "i": 16,
+     "reason": "you were talking"
+    },
+    {
+     "i": 17,
+     "reason": "you were talking"
+    },
+    {
+     "i": 18,
+     "reason": "you were talking"
+    },
+    {
+     "i": 19,
+     "reason": "you were talking"
+    },
+    {
+     "i": 20,
+     "reason": "you were talking"
+    },
+    {
+     "i": 21,
+     "reason": "you were talking"
+    },
+    {
+     "i": 24,
+     "reason": "you were talking"
+    },
+    {
+     "i": 25,
+     "reason": "you were talking"
+    },
+    {
+     "i": 26,
+     "reason": "you were talking"
+    },
+    {
+     "i": 27,
+     "reason": "you were talking"
+    },
+    {
+     "i": 28,
+     "reason": "you were talking"
+    }
+   ],
+   "refusedCount": 27,
+   "notes": {
+    "no-reading": 27,
+    "brief": 2
+   },
+   "confidentPulseSamples": 349,
+   "medianFps": 30,
+   "perParagraph": [
+    {
+     "i": 0,
+     "camera": "no-reading",
+     "dwell": "lingered",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 2.03
+     }
+    },
+    {
+     "i": 1,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1.48
+     }
+    },
+    {
+     "i": 2,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1.15
+     }
+    },
+    {
+     "i": 3,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1.34
+     }
+    },
+    {
+     "i": 4,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1.45
+     }
+    },
+    {
+     "i": 5,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1.24
+     }
+    },
+    {
+     "i": 6,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1.33
+     }
+    },
+    {
+     "i": 7,
+     "camera": "no-reading",
+     "dwell": "lingered",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1.93
+     }
+    },
+    {
+     "i": 8,
+     "camera": "no-reading",
+     "dwell": "lingered",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1.56
+     }
+    },
+    {
+     "i": 9,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 0.98
+     }
+    },
+    {
+     "i": 10,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1.41
+     }
+    },
+    {
+     "i": 11,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1.34
+     }
+    },
+    {
+     "i": 12,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1
+     }
+    },
+    {
+     "i": 13,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1.46
+     }
+    },
+    {
+     "i": 14,
+     "camera": "no-reading",
+     "dwell": "skimmed",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 0.37
+     }
+    },
+    {
+     "i": 15,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 0.66
+     }
+    },
+    {
+     "i": 16,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 0.62
+     }
+    },
+    {
+     "i": 17,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1
+     }
+    },
+    {
+     "i": 18,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 1.37
+     }
+    },
+    {
+     "i": 19,
+     "camera": "no-reading",
+     "dwell": "skimmed",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 0.19
+     }
+    },
+    {
+     "i": 20,
+     "camera": "no-reading",
+     "dwell": "skimmed",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 0.08
+     }
+    },
+    {
+     "i": 21,
+     "camera": "no-reading",
+     "dwell": "skimmed",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 0.05
+     }
+    },
+    {
+     "i": 22,
+     "camera": "brief",
+     "dwell": "skimmed",
+     "reason": "too brief to read a signal",
+     "evidence": {
+      "dwellRatio": 0.03
+     }
+    },
+    {
+     "i": 23,
+     "camera": "brief",
+     "dwell": "skimmed",
+     "reason": "too brief to read a signal",
+     "evidence": {
+      "dwellRatio": 0.02
+     }
+    },
+    {
+     "i": 24,
+     "camera": "no-reading",
+     "dwell": "skimmed",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 0.03
+     }
+    },
+    {
+     "i": 25,
+     "camera": "no-reading",
+     "dwell": "skimmed",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 0.03
+     }
+    },
+    {
+     "i": 26,
+     "camera": "no-reading",
+     "dwell": "skimmed",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 0.03
+     }
+    },
+    {
+     "i": 27,
+     "camera": "no-reading",
+     "dwell": "skimmed",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 0.02
+     }
+    },
+    {
+     "i": 28,
+     "camera": "no-reading",
+     "dwell": "normal",
+     "reason": "you were talking",
+     "evidence": {
+      "dwellRatio": 0.59
+     }
+    }
+   ]
+  },
+  "graded": {
+   "title": "The Open Window",
+   "reader": {
+    "blinkPerMin": 15.5,
+    "pulseMedian": 81.6,
+    "breathMedian": null,
+    "hrvMedian": null,
+    "msPerWord": 343,
+    "readableShare": 0.98
+   },
+   "paragraphs": 29,
+   "readMinutes": 8.2,
+   "marksSavedAt": "2026-11-21T19:40:39.481Z",
+   "reviewOpenedAt": null,
+   "marked": {
+    "got": [
+     1,
+     3,
+     9,
+     13
+    ],
+    "lost": []
+   },
+   "camera": {
+    "got": {
+     "flagged": 9,
+     "marked": 4,
+     "found": 2,
+     "recall": 0.5,
+     "precision": 0.2222222222222222,
+     "judgeable": 24,
+     "chance": 1.5
+    },
+    "lost": {
+     "flagged": 0,
+     "marked": 0,
+     "found": 0,
+     "recall": null,
+     "precision": null,
+     "judgeable": 24,
+     "chance": 0
+    }
+   },
+   "dwell": {
+    "got": {
+     "flagged": 8,
+     "marked": 4,
+     "found": 3,
+     "recall": 0.75,
+     "precision": 0.375,
+     "judgeable": 29,
+     "chance": 1.1
+    },
+    "lost": {
+     "flagged": 5,
+     "marked": 0,
+     "found": 0,
+     "recall": null,
+     "precision": 0,
+     "judgeable": 29,
+     "chance": 0
+    }
+   },
+   "refused": [],
+   "refusedCount": 0,
+   "notes": {
+    "steady": 15,
+    "gripped": 8,
+    "brief": 5,
+    "amused": 1
+   },
+   "confidentPulseSamples": 649,
+   "medianFps": 30,
+   "perParagraph": [
+    {
+     "i": 0,
+     "camera": "steady",
+     "dwell": "normal",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 0.85,
+      "blinkPerMin": 0,
+      "blinkRatio": null,
+      "pulseDelta": -1.2,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 1,
+     "camera": "gripped",
+     "dwell": "lingered",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 2.25,
+      "blinkPerMin": 5.5,
+      "blinkRatio": 0.35,
+      "pulseDelta": -0.4,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 2,
+     "camera": "gripped",
+     "dwell": "lingered",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 2.17,
+      "blinkPerMin": 12.1,
+      "blinkRatio": 0.78,
+      "pulseDelta": 4.8,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 3,
+     "camera": "gripped",
+     "dwell": "lingered",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 2.8,
+      "blinkPerMin": 20.4,
+      "blinkRatio": 1.32,
+      "pulseDelta": 4.5,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 4,
+     "camera": "gripped",
+     "dwell": "lingered",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 2.34,
+      "blinkPerMin": 6.8,
+      "blinkRatio": 0.44,
+      "pulseDelta": -1.3,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 5,
+     "camera": "gripped",
+     "dwell": "normal",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 1.12,
+      "blinkPerMin": 0,
+      "blinkRatio": 0,
+      "pulseDelta": -7.3,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 6,
+     "camera": "steady",
+     "dwell": "lingered",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 1.92,
+      "blinkPerMin": 26.1,
+      "blinkRatio": null,
+      "pulseDelta": -10.5,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 7,
+     "camera": "steady",
+     "dwell": "lingered",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 1.92,
+      "blinkPerMin": 18.5,
+      "blinkRatio": null,
+      "pulseDelta": -6.2,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 8,
+     "camera": "steady",
+     "dwell": "lingered",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 2.44,
+      "blinkPerMin": 22.7,
+      "blinkRatio": 1.47,
+      "pulseDelta": -2.4,
+      "smileMs": 600
+     }
+    },
+    {
+     "i": 9,
+     "camera": "steady",
+     "dwell": "normal",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 0.95,
+      "blinkPerMin": 10.2,
+      "blinkRatio": null,
+      "pulseDelta": -6.6,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 10,
+     "camera": "steady",
+     "dwell": "normal",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 1.19,
+      "blinkPerMin": 9.8,
+      "blinkRatio": null,
+      "pulseDelta": -2.2,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 11,
+     "camera": "steady",
+     "dwell": "normal",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 0.72,
+      "blinkPerMin": 17.6,
+      "blinkRatio": null,
+      "pulseDelta": -0.3,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 12,
+     "camera": "steady",
+     "dwell": "normal",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 0.83,
+      "blinkPerMin": 18.2,
+      "blinkRatio": null,
+      "pulseDelta": -2.9,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 13,
+     "camera": "steady",
+     "dwell": "lingered",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 1.61,
+      "blinkPerMin": 16.6,
+      "blinkRatio": 1.07,
+      "pulseDelta": -0.9,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 14,
+     "camera": "steady",
+     "dwell": "normal",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 0.9,
+      "blinkPerMin": 24.2,
+      "blinkRatio": null,
+      "pulseDelta": 1.2,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 15,
+     "camera": "brief",
+     "dwell": "normal",
+     "reason": "too brief to read a signal",
+     "evidence": {
+      "dwellRatio": 0.87
+     }
+    },
+    {
+     "i": 16,
+     "camera": "brief",
+     "dwell": "normal",
+     "reason": "too brief to read a signal",
+     "evidence": {
+      "dwellRatio": 1
+     }
+    },
+    {
+     "i": 17,
+     "camera": "steady",
+     "dwell": "normal",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 1.31,
+      "blinkPerMin": 19.8,
+      "blinkRatio": 1.28,
+      "pulseDelta": 1.5,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 18,
+     "camera": "steady",
+     "dwell": "normal",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 0.83,
+      "blinkPerMin": 20.3,
+      "blinkRatio": 1.31,
+      "pulseDelta": 2,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 19,
+     "camera": "steady",
+     "dwell": "normal",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 1.12,
+      "blinkPerMin": 20.6,
+      "blinkRatio": 1.33,
+      "pulseDelta": -1.3,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 20,
+     "camera": "amused",
+     "dwell": "normal",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 1.15,
+      "blinkPerMin": 41.4,
+      "blinkRatio": null,
+      "pulseDelta": -2.5,
+      "smileMs": 1100
+     }
+    },
+    {
+     "i": 21,
+     "camera": "gripped",
+     "dwell": "normal",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 0.97,
+      "blinkPerMin": 42.3,
+      "blinkRatio": null,
+      "pulseDelta": 7.2,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 22,
+     "camera": "gripped",
+     "dwell": "normal",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 0.84,
+      "blinkPerMin": 4.2,
+      "blinkRatio": 0.27,
+      "pulseDelta": -4.8,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 23,
+     "camera": "steady",
+     "dwell": "skimmed",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 0.32,
+      "blinkPerMin": 15.8,
+      "blinkRatio": null,
+      "pulseDelta": 0.8,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 24,
+     "camera": "gripped",
+     "dwell": "skimmed",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 0.25,
+      "blinkPerMin": 17.6,
+      "blinkRatio": null,
+      "pulseDelta": 5.4,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 25,
+     "camera": "steady",
+     "dwell": "skimmed",
+     "reason": null,
+     "evidence": {
+      "dwellRatio": 0.31,
+      "blinkPerMin": 0,
+      "blinkRatio": null,
+      "pulseDelta": -3,
+      "smileMs": 0
+     }
+    },
+    {
+     "i": 26,
+     "camera": "brief",
+     "dwell": "skimmed",
+     "reason": "too brief to read a signal",
+     "evidence": {
+      "dwellRatio": 0.16
+     }
+    },
+    {
+     "i": 27,
+     "camera": "brief",
+     "dwell": "skimmed",
+     "reason": "too brief to read a signal",
+     "evidence": {
+      "dwellRatio": 0.11
+     }
+    },
+    {
+     "i": 28,
+     "camera": "brief",
+     "dwell": "normal",
+     "reason": "too brief to read a signal",
+     "evidence": {
+      "dwellRatio": 1.22
+     }
+    }
+   ]
+  }
+ },
+ "controls": {
+  "controls1": {
+   "cases": [
+    {
+     "i": 2,
+     "action": "looked at the phone",
+     "expect": "no-reading",
+     "reason": "you looked away",
+     "paragraph": 3,
+     "got": "no-reading",
+     "gotReason": "you were talking",
+     "pass": false
+    },
+    {
+     "i": 5,
+     "action": "read aloud",
+     "expect": "no-reading",
+     "reason": "you were talking",
+     "paragraph": 6,
+     "got": "no-reading",
+     "gotReason": "you were talking",
+     "pass": true
+    },
+    {
+     "i": 8,
+     "action": "turned away",
+     "expect": "no-reading",
+     "reason": "you looked away",
+     "paragraph": 9,
+     "got": "no-reading",
+     "gotReason": "you were talking",
+     "pass": false
+    },
+    {
+     "i": 10,
+     "action": "read normally",
+     "expect": "reading",
+     "paragraph": 11,
+     "got": "no-reading",
+     "gotReason": "you were talking",
+     "pass": false
+    },
+    {
+     "i": 11,
+     "action": "read normally",
+     "expect": "reading",
+     "paragraph": 12,
+     "got": "no-reading",
+     "gotReason": "you were talking",
+     "pass": false
+    }
+   ],
+   "plantedRefused": 1,
+   "planted": 3,
+   "harmlessRead": 0,
+   "harmless": 2
+  }
+ }
 }

@@ -464,7 +464,7 @@ function review(s, { replay = false } = {}) {
       app: 'unskipped', kind: 'reading', version: 1,
       title: s.title, textHash: s.textHash, reader: s.reader, consent: s.consent,
       readStart: s.readStart, readEnd: s.readEnd, sentAt: new Date().toISOString(),
-      readerStats: scored.reader, marks: s.marks, grade: g, deletedByReader: dropped, notes,
+      readerStats: scored.reader, marks: s.marks, review: s.review, grade: g, deletedByReader: dropped, notes,
       raw: $('#raw').checked ? { title: s.title, byline: s.byline, reader: s.reader, timeline: s.timeline, events: s.events, fps: s.fps, paragraphs: s.paragraphs, readStart: s.readStart, readEnd: s.readEnd, settleStart: s.settleStart, marks: s.marks, review: s.review } : null,
     };
     const slug = `${s.title}.${name}`.toLowerCase().replace(/[^a-z0-9.]+/g, '-');

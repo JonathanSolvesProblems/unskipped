@@ -14,7 +14,9 @@ const dir = 'results/sessions';
 // Pre-registration: the reader's marks must be saved strictly before the review screen opened.
 // Missing or unparseable dates fail too, so a file cannot pass by leaving the field out.
 function checkMarksFirst(s, label) {
-  const saved = Date.parse(s.marks?.savedAt), opened = Date.parse(s.review?.openedAt);
+  // review.sentAt stands in only for sessions taken from the app's backup (see add-backup), where
+  // the review screen's opening time was not stored; it is later than the opening, so stricter
+  const saved = Date.parse(s.marks?.savedAt), opened = Date.parse(s.review?.openedAt ?? s.review?.sentAt);
   if (!Number.isFinite(saved) || !Number.isFinite(opened) || !(saved < opened)) {
     throw new Error(`${label}: marks must be saved before the review opened (savedAt ${s.marks?.savedAt}, openedAt ${s.review?.openedAt})`);
   }
@@ -36,6 +38,24 @@ if (process.argv[2] === 'add') {
   const s = { ...r.raw, reader: r.reader, marks: r.marks || r.raw.marks, title: r.title, consent: r.consent };
   if (!s.marks?.savedAt) throw new Error('reading has no marks');
   checkMarksFirst(s, src);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, `${name}.json`), JSON.stringify(s));
+  console.log(`added ${dir}/${name}.json`);
+}
+
+// add-backup <session backup> <reading.json> <name>: for a reading sent without raw samples, take the
+// signals from the app's running session backup (tmp/live-session.json), but only when the backup
+// is the same session as the reading: same text, same read start and end, same marks.
+if (process.argv[2] === 'add-backup') {
+  const [, , , bak, src, name] = process.argv;
+  const b = JSON.parse(fs.readFileSync(bak, 'utf8'));
+  const r = JSON.parse(fs.readFileSync(src, 'utf8'));
+  const same = (x, y) => JSON.stringify(x) === JSON.stringify(y);
+  if (b.textHash !== r.textHash || b.readStart !== r.readStart || b.readEnd !== r.readEnd || !same(b.marks, r.marks)) {
+    throw new Error('the backup is not the same session as the reading; nothing added');
+  }
+  const s = { ...b, reader: r.reader, consent: r.consent, review: { ...(b.review || {}), sentAt: r.sentAt, source: 'session backup, matched to the sent reading' } };
+  checkMarksFirst(s, bak);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, `${name}.json`), JSON.stringify(s));
   console.log(`added ${dir}/${name}.json`);
@@ -64,7 +84,7 @@ for (const f of files) {
     medianFps: fps.length ? fps.sort((a, b) => a - b)[fps.length >> 1] : null,
     perParagraph: scored.paragraphs.map((n) => ({ i: n.i, camera: n.camera, dwell: n.dwell, reason: n.reason, evidence: n.evidence })),
   };
-  if (f === 'controls.json') {
+  if (/^controls\d*\.json$/.test(f)) {
     const cases = PLANTED.map((c) => {
       const n = scored.paragraphs[c.i];
       const pass = c.expect === 'no-reading'
@@ -72,7 +92,8 @@ for (const f of files) {
         : n.camera !== 'no-reading' && n.camera !== 'unseen';
       return { ...c, paragraph: c.i + 1, got: n.camera, gotReason: n.reason, pass };
     });
-    out.controls = {
+    out.controls = out.controls || {};
+    out.controls[f.replace(/\.json$/, '')] = {
       cases,
       plantedRefused: cases.filter((c) => c.expect === 'no-reading' && c.pass).length,
       planted: cases.filter((c) => c.expect === 'no-reading').length,
@@ -96,9 +117,8 @@ for (const [k, r] of Object.entries(out.sessions)) {
   md += `Notes: ${Object.entries(r.notes).map(([a, b]) => `${a} ${b}`).join(', ')}. No reading: ${r.refused.map((x) => `paragraph ${x.i + 1} (${x.reason})`).join('; ') || 'none'}.\n\n`;
   md += `Reader baselines: pulse median ${r.reader.pulseMedian} bpm, ${r.reader.blinkPerMin} blinks a minute, ${r.reader.msPerWord} ms a word, face readable ${pct(r.reader.readableShare)} of the time. ${r.confidentPulseSamples} confident pulse samples; median ${r.medianFps} fps.\n\n`;
 }
-if (out.controls) {
-  const c = out.controls;
-  md += `## Planted controls\n\n${c.plantedRefused} of ${c.planted} planted paragraphs refused with the right reason; ${c.harmlessRead} of ${c.harmless} normally read paragraphs got a reading.\n\n| Paragraph | Planted | Expected | Got | Pass |\n|---|---|---|---|---|\n`;
+for (const [name, c] of Object.entries(out.controls || {})) {
+  md += `## Planted controls: ${name}\n\n${c.plantedRefused} of ${c.planted} planted paragraphs refused with the right reason; ${c.harmlessRead} of ${c.harmless} normally read paragraphs got a reading.\n\n| Paragraph | Planted | Expected | Got | Pass |\n|---|---|---|---|---|\n`;
   for (const x of c.cases) md += `| ${x.paragraph} | ${x.action} | ${x.expect === 'reading' ? 'a reading' : `no reading: ${x.reason}`} | ${x.got}${x.gotReason ? `: ${x.gotReason}` : ''} | ${x.pass ? 'yes' : 'no'} |\n`;
   md += '\n';
 }

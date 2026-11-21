@@ -3,8 +3,9 @@
 //   node tools/null-check.js
 //
 // Simulates 200 readers per blink rate who read the graded story's paragraph lengths at a steady
-// pace, blink at random, hold a flat pulse and never smile, then scores them with the committed
-// code. Every flag such a reader gets is a false one. Writes results/null-check.json.
+// pace, blink at random, keep a real resting pulse and never smile, then scores them with the committed
+// code. Every flag such a reader gets is a false one. Pulse is a real resting pulse (see below).
+// Writes results/null-check.json.
 // Only paragraph word counts are taken from the story; no text is printed.
 import fs from 'node:fs';
 import { scoreSession } from '../src/score.js';
@@ -13,9 +14,22 @@ const blocks = fs.readFileSync('stories/the-open-window.md', 'utf8').replace(/\r
   .map((b) => b.trim()).filter((b) => b && !/^#\s/.test(b) && !/^_.*_$/.test(b));
 const words = blocks.map((b) => b.split(/\s+/).length);
 
+const REST = JSON.parse(fs.readFileSync('results/pulse-check-camera.json', 'utf8')).readings
+  .filter((x) => x.confidence >= 40).map((x) => ({ t: x.t, bpm: x.bpm }));
+const REST_SPAN = REST[REST.length - 1].t - REST[0].t;
+
 function simulate(blinksPerMin, seed) {
   let r = seed;
   const rnd = () => ((r = (r * 1664525 + 1013904223) % 4294967296) / 4294967296);
+  // pulse: a real resting pulse, not a flat line. The camera's own readings from the oximeter check
+  // (sitting still, no reading), looped from a random start, so natural wander is included.
+  const offset = rnd() * REST_SPAN;
+  const pulseAt = (ms) => {
+    const u = (ms / 1000 + offset) % REST_SPAN + REST[0].t;
+    let best = REST[0];
+    for (const p of REST) { if (p.t <= u) best = p; else break; }
+    return best.bpm;
+  };
   let t = 2000;
   const timeline = words.map((w, i) => { const e = { t, p: i }; t += w * 240 * (0.85 + 0.3 * rnd()); return e; });
   const end = t, events = [];
@@ -23,7 +37,7 @@ function simulate(blinksPerMin, seed) {
   for (let x = 0; x < end; x += 100) {
     const on = rnd() < blinksPerMin / 600;
     events.push({ t: x, kind: 'sample', s: {
-      t: x, pulse: { v: 72 + (rnd() - 0.5) * 3, c: 90, s: true },
+      t: x, pulse: { v: pulseAt(x), c: 90, s: true },
       blink: [{ ts: ++k, on, t: x }, { ts: ++k, on: false, t: x + 50 }],
       expr: { happy: rnd() * 30 }, face: true,
     } });

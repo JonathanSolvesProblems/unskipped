@@ -18,6 +18,8 @@ export const THRESHOLDS = {
   happyConfidence: 50,     // HAPPY expression score, percent
   smileMinMs: 700,         // a smile has to last this long, unbroken, to count
   minExpectedBlinks: 3,    // judge blink rate only where the reader's own rate predicts 3+ blinks
+  headTurn: 0.2,           // head turned this far from the reader's own median (face-width ratio) = looked away
+  headTilt: 0.1,           // or tilted this far (face-height ratio); both about 4x the resting variation
   dwellSlowRatio: 1.5,     // baseline: time per word 1.5x the reader's median = lingered
   dwellFastRatio: 0.5,     // under half = skimmed
 };
@@ -106,9 +108,15 @@ export function scoreSession(session, th = THRESHOLDS) {
   };
   const sampleAt = sampleAtFactory();
   // why a moment is not readable, or null when it is (the same test for time and for blinks)
+  // the reader's own head position, so a glance at a phone counts as looking away even while the
+  // SDK still sees a face (sessions recorded before head data was kept are scored without it)
+  const heads = samples.filter((x) => x.head);
+  const headYaw = median(heads.map((x) => x.head.yaw)), headPitch = median(heads.map((x) => x.head.pitch));
+  const turned = (s) => s?.head && Number.isFinite(headYaw)
+    && (Math.abs(s.head.yaw - headYaw) > th.headTurn || Math.abs(s.head.pitch - headPitch) > th.headTilt);
   const unreadable = (t, s) => {
     const code = codeAt(vt, t);
-    if (LOOKED_AWAY.has(code) || (s && s.face === false)) return 'awayMs';
+    if (LOOKED_AWAY.has(code) || (s && s.face === false) || turned(s)) return 'awayMs';
     if (TOO_DARK.has(code)) return 'darkMs';
     if (MOVING.has(code)) return 'movingMs';
     if (talkOn(t)) return 'talkMs';

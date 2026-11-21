@@ -170,3 +170,22 @@ test('grade compares camera and dwell flags to the reader marks', () => {
   assert.equal(g.camera.lost.found, 1);
   assert.deepEqual(g.refused, [{ i: 4, reason: 'you looked away' }]);
 });
+
+test('a head turned away counts as looking away even while the SDK still sees a face', () => {
+  const s = baseSession();
+  s.events = steadySamples(s).map((e) => {
+    const pi = paragraphAt(s.timeline, e.t, s.readEnd);
+    return { ...e, s: { ...e.s, head: pi === 3 ? { yaw: 0.85, pitch: 0.35 } : { yaw: 0.55, pitch: 0.35 } } };
+  });
+  const { paragraphs } = scoreSession(s);
+  assert.equal(paragraphs[3].camera, 'no-reading');
+  assert.equal(paragraphs[3].reason, 'you looked away');
+  assert.notEqual(paragraphs[2].camera, 'no-reading');
+});
+
+test('head position comes from the face mesh as two ratios, nothing else kept', () => {
+  const P = Array.from({ length: 478 }, () => ({ x: 0, y: 0 }));
+  P[33] = { x: 100, y: 100 }; P[263] = { x: 200, y: 100 }; P[1] = { x: 160, y: 140 }; P[152] = { x: 150, y: 200 };
+  const out = compactSample({ face: { landmarks: [{ value: P }] } }, 0);
+  assert.deepEqual(out.head, { yaw: 0.6, pitch: 0.4 });
+});

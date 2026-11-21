@@ -5,28 +5,28 @@
  "rates": [
   {
    "blinksPerMin": 6,
-   "grippedPct": 0.5,
-   "driftingPct": 0.2,
+   "grippedPct": 17.6,
+   "driftingPct": 0.1,
    "smiledPct": 0
   },
   {
    "blinksPerMin": 10,
-   "grippedPct": 2.1,
-   "driftingPct": 1.2,
+   "grippedPct": 18.9,
+   "driftingPct": 1.1,
    "smiledPct": 0
   },
   {
    "blinksPerMin": 15,
-   "grippedPct": 5,
-   "driftingPct": 3,
+   "grippedPct": 21.5,
+   "driftingPct": 2.2,
    "smiledPct": 0
   },
   {
    "blinksPerMin": 20,
-   "grippedPct": 6.7,
-   "driftingPct": 3.2,
+   "grippedPct": 22.3,
+   "driftingPct": 2.5,
    "smiledPct": 0
   }
  ],
- "maxFalseGrippedPct": 6.7
+ "maxFalseGrippedPct": 22.3
 }

@@ -63,5 +63,14 @@ export function compactSample(m, t) {
 
   const lm = last(m?.face?.landmarks);
   if (lm) out.face = Array.isArray(lm.value) && lm.value.length > 0;
+  // head position from the face mesh (MediaPipe indexes: 1 nose tip, 33 and 263 outer eye corners,
+  // 152 chin), as two ratios that do not depend on distance: turn (nose across the eyes) and tilt
+  // (nose down from the eyes toward the chin). Only these two numbers are kept, no face geometry.
+  const P = lm?.value;
+  if (Array.isArray(P) && P.length > 263) {
+    const n = P[1], l = P[33], r = P[263], c = P[152];
+    const ey = (l.y + r.y) / 2;
+    if (r.x !== l.x && c.y !== ey) out.head = { yaw: Math.round(((n.x - l.x) / (r.x - l.x)) * 1000) / 1000, pitch: Math.round(((n.y - ey) / (c.y - ey)) * 1000) / 1000 };
+  }
   return out;
 }
