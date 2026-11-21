@@ -1,6 +1,8 @@
-// Fails if a number in the DEV post disagrees with the results files.
+// Fails if a number in a document disagrees with the results files.
 //
-// Every claim in post/devto.md that comes from a measurement is written with a marker:
+//   node tools/check-claims.js <file.md>
+//
+// Every claim in the document that comes from a measurement is written with a marker:
 //   <!--claim:graded.camera.got.found-->4<!--/claim-->
 // The path is looked up in results/summary.json (under "sessions"), and the text between the
 // markers must equal it (percentages written as "75%" are compared to the 0..1 value).
@@ -14,7 +16,16 @@ const root = {
   nullcheck: fs.existsSync('results/null-check.json') ? JSON.parse(fs.readFileSync('results/null-check.json', 'utf8')) : undefined,
   pulsecheck: fs.existsSync('results/pulse-check.json') ? JSON.parse(fs.readFileSync('results/pulse-check.json', 'utf8')) : undefined,
 };
-const post = fs.readFileSync(process.argv[2] || 'post/devto.md', 'utf8');
+// a local .md file, or the published DEV post through DEV's public API (its markdown source)
+const file = process.argv[2] || 'https://dev.to/api/articles/jonathansolvesstuff/unskipped-see-where-your-beta-reader-stopped-caring-as-page-flags-in-your-own-manuscript-18b2';
+let post;
+if (/^https?:/.test(file)) {
+  const res = await fetch(file);
+  if (!res.ok) { console.error(`could not fetch ${file}: HTTP ${res.status}`); process.exit(1); }
+  post = (await res.json()).body_markdown;
+} else {
+  post = fs.readFileSync(file, 'utf8');
+}
 const re = /<!--claim:([\w.]+)-->([\s\S]*?)<!--\/claim-->/g;
 let m, n = 0, bad = 0;
 while ((m = re.exec(post))) {
@@ -27,4 +38,4 @@ while ((m = re.exec(post))) {
   if (!ok) { bad++; console.error(`MISMATCH ${key}: post says "${text.trim()}", results say ${JSON.stringify(val)}`); }
 }
 console.log(`${n} claims checked, ${bad} mismatched`);
-process.exit(bad || n === 0 ? 1 : 0);
+process.exitCode = bad || n === 0 ? 1 : 0;   // not process.exit(): it aborts the fetch socket mid-close on Windows

@@ -74,7 +74,7 @@ In the order of the demo video. Numbers on the slides come from `results/summary
 ```bash
 npm test        # unit tests: scoring, grading, Word comments
 npm run results # re-score the committed sessions in results/sessions/ into results/summary.json
-npm run check   # results, then fail if any number in post/devto.md disagrees with them
+npm run check   # results, then fail if any number in the published DEV post disagrees with them
 ```
 
 ## How it decides
