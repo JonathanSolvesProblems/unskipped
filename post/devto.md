@@ -61,7 +61,7 @@ I read Saki's "The Open Window" (1914, 29 paragraphs) without having read it bef
 
 **Controls**, written down before the run: on a second read I looked at my phone for a whole paragraph, read one aloud, and turned away for another. <!--claim:controls.plantedRefused-->TBD<!--/claim--> of 3 came back as "no reading" with the right reason, and <!--claim:controls.harmlessRead-->TBD<!--/claim--> of the 2 paragraphs I read normally got readings.
 
-**Pulse against a reference**: TBD (fingertip pulse oximeter beside the camera).
+**Pulse against a reference.** I wore a fingertip pulse oximeter (LOOKEE A310) for 2.5 minutes while the laptop webcam measured my pulse, and filmed the oximeter's display with my phone. Read every 5 seconds and lined up by clock, <!--claim:pulsecheck.pairs-->29<!--/claim--> pairs: the camera averaged <!--claim:pulsecheck.cameraMean-->77.1<!--/claim--> bpm and the oximeter <!--claim:pulsecheck.sensorMean-->77.3<!--/claim-->, a mean gap of <!--claim:pulsecheck.meanAbsDiff-->1<!--/claim--> bpm, and <!--claim:pulsecheck.within5-->29<!--/claim--> of them within 5 bpm (`node tools/pulse-check.js`, readings in `results/`). One person, one sitting, pulse rate only: enough to trust it for "pulse rose while reading this paragraph", not a medical measurement.
 
 ## Prize Categories
 

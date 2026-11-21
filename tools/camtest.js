@@ -74,7 +74,8 @@ setTimeout(async () => {
   await sdk.destroy();
   fs.mkdirSync('tmp', { recursive: true });
   const out = path.join('tmp', `camtest-${Date.now()}.json`);
-  fs.writeFileSync(out, JSON.stringify({ camera: cam, seconds, frames, sent, stream }));
+  // t0Epoch: wall-clock ms at t = 0, so the stream can be lined up with another recording
+  fs.writeFileSync(out, JSON.stringify({ camera: cam, seconds, t0Epoch: t0, frames, sent, stream }));
   console.log(`\nframes ${frames} (${(frames / seconds).toFixed(1)} fps), sent ${sent}. Saved ${out}`);
   process.exit(0);
 }, seconds * 1000);
