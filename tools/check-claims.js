@@ -12,6 +12,7 @@ const root = {
   ...summary.sessions,
   controls: summary.controls,
   nullcheck: fs.existsSync('results/null-check.json') ? JSON.parse(fs.readFileSync('results/null-check.json', 'utf8')) : undefined,
+  pulsecheck: fs.existsSync('results/pulse-check.json') ? JSON.parse(fs.readFileSync('results/pulse-check.json', 'utf8')) : undefined,
 };
 const post = fs.readFileSync(process.argv[2] || 'post/devto.md', 'utf8');
 const re = /<!--claim:([\w.]+)-->([\s\S]*?)<!--\/claim-->/g;

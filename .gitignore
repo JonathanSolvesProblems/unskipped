@@ -21,3 +21,4 @@ PHASE0.md
 # reading files as saved by the app (results/sessions holds the published copies)
 readings/
 __pycache__/
+broll/
