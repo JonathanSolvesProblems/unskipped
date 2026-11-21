@@ -178,7 +178,7 @@ function railHtml({ stop = false } = {}) {
     <div class="state" id="status" role="status"></div>
     <div class="readout" id="readout"></div>
     <p class="rail-note">Live camera, on this laptop only. Not recorded.</p>
-    ${stop ? '<div class="on-cloth row"><button class="btn" id="done">I’ve finished</button><button class="btn quiet" id="quit">Stop</button></div>' : ''}
+    ${stop ? '<div class="on-cloth row"><button class="btn" id="done">I’ve finished</button><button class="link" id="quit">Stop</button></div>' : ''}
   </section>`;
 }
 function paintRail() {
@@ -323,6 +323,7 @@ function review(s, { replay = false } = {}) {
     : 'You marked nothing as got me. Here is what the camera noticed';
   view.innerHTML = `<section class="review">
     <div class="verdict">
+      ${replay ? '<p class="replay-note">A recorded reading, replayed from its session file through the same scoring code. No camera, no key.</p>' : ''}
       <h1>${headline}</h1>
       <p class="base">${gm.marked && gm.chance !== null ? `Flags placed at random would find about ${gm.chance} of ${gm.marked}. ` : ''}Time on the page alone found ${gd.found}${gm.marked ? ` of ${gd.marked}` : ''}. ${g.refused.length ? `${cap(numWord(g.refused.length))} paragraph${g.refused.length > 1 ? 's' : ''} had no reading, and say so.` : 'Every paragraph had a reading.'} Read in ${minutes} minutes, face readable ${pct(scored.reader.readableShare)} of the time.</p>
       <nav class="edge" aria-label="The chapter seen from its edge: each paragraph as wide as it is long">
@@ -347,7 +348,7 @@ function review(s, { replay = false } = {}) {
         <div><span class="swatch pencil"></span>Your own marks, in pencil on the left</div>
       </div>
       <div class="slip note-slip" id="note"><h2>Select a flag</h2><p class="small">Each flag says what the camera saw on that paragraph and how sure it was.</p></div>
-      ${replay ? `<div class="slip"><p style="margin:0;font-size:14px;line-height:1.5">This is a recorded reading, replayed from its session file: the same scoring code, no camera and no key. The live app runs on the desktop with a SmartSpectra key.</p></div>` : `
+      ${replay ? '' : `
       <div class="send on-cloth">
         <button class="btn" id="send">Send the kept notes to the writer</button>
         <label><input type="checkbox" id="raw"> Also include the raw signal samples, for research. Off by default.</label>
@@ -368,7 +369,11 @@ function review(s, { replay = false } = {}) {
       : e.dwellRatio < 1 ? `You spent ${Math.round(e.dwellRatio * 100)}% of your usual time per word here.`
       : `You spent ${e.dwellRatio.toFixed(1)} times your usual time per word here.`);
     const own = s.marks.got.includes(i) ? 'You marked it as got me.' : s.marks.lost.includes(i) ? 'You marked it as lost me.' : '';
-    $('#note').innerHTML = `<h2>Paragraph ${i + 1}${kept.has(i) ? '' : ', dropped from what you send'}</h3><p>${esc(commentFor(n, name) || 'Nothing to say about this one.')}</p>
+    // the slip states the finding once; the evidence line carries the numbers (the Word comment keeps both)
+    const lead = { amused: 'Smiled here.', gripped: 'Gripped here.', drifting: 'May have drifted here.',
+      'no-reading': `No reading: ${n.reason}. Unskipped does not guess.`, brief: 'Too brief to read a signal.',
+      unseen: 'Never on the reading line.' }[n.camera] || 'Nothing stood out here.';
+    $('#note').innerHTML = `<h2>Paragraph ${i + 1}${kept.has(i) ? '' : ', dropped from what you send'}</h2><p>${esc(lead)}</p>
       <p class="ev">${esc([...ev, own].filter(Boolean).join(' '))}</p>
       ${replay ? '' : '<p class="ev">Click the flag again to drop this note, or to keep it.</p>'}`;
   };
@@ -418,16 +423,16 @@ function writer() {
     // the wrong paragraphs. Export only when every reading matches this manuscript.
     const mismatch = ms && S.readings.some((r) => r.data.textHash !== hashText(ms.paragraphs));
     view.innerHTML = `<section class="writer">
+      <button class="link back" id="home">← Back</button>
       <h1 style="color:var(--cloth-ink)">Your readers in your margin</h1>
       <p class="lede">Choose your manuscript, add the reading files your readers sent, and each kept note becomes a Word comment on its paragraph.</p>
       <div class="sheet">
-        <div class="row"><button class="btn quiet" id="pick">${ms ? 'Change manuscript' : 'Choose manuscript'}</button>
-          <span>${ms ? `<b>${esc(ms.title)}</b><br><span class="small">${esc(S.manuscript.path)}</span>` : '<span class="small">.docx, .md or .txt</span>'}</span></div>
+        <h2>Manuscript</h2>
+        <div class="row" style="margin-top:10px">${ms ? `<span><b>${esc(ms.title)}</b><br><span class="small">${esc(S.manuscript.path)}</span></span><button class="btn quiet" id="pick">Change</button>` : '<button class="btn quiet" id="pick">Choose manuscript</button><span class="small">.docx, .md or .txt</span>'}</div>
         <h2 style="margin-top:28px">Readings</h2>
         <table class="files">${S.readings.map((r) => `<tr><td>${esc(r.data.reader.name)}</td><td>${r.data.notes.length} notes</td><td class="small">${esc(new Date(r.data.sentAt).toLocaleString())}</td><td>${ms && r.data.textHash !== hashText(ms.paragraphs) ? '<span class="error">read a different text than this manuscript</span>' : ''}</td></tr>`).join('') || '<tr><td class="small">None yet</td></tr>'}</table>
         <div class="row"><button class="btn quiet" id="add">Add reading files</button>
-          <button class="btn" id="export" ${ms && S.readings.length && !mismatch ? '' : 'disabled'}>Write the notes into my manuscript</button>
-          <button class="btn quiet" id="home">Back</button></div>
+          <button class="btn" id="export" ${ms && S.readings.length && !mismatch ? '' : 'disabled'}>Write the notes into my manuscript</button></div>
         ${!mismatch && !(ms && S.readings.length) ? `<p class="small">${!ms ? 'Choose the manuscript first, then add the reading files your readers sent.' : 'Add at least one reading file to write the notes in.'}</p>` : ''}
         ${mismatch ? '<p class="error">A reading was made on a different text than this manuscript, so its notes would land on the wrong paragraphs. Choose the same file the reader read.</p>' : ''}
       </div></section>`;
