@@ -16,6 +16,7 @@ Entry for the [DEV Presage SmartSpectra SDK Challenge](https://dev.to/challenges
 - **Demo video (1:26):** https://www.youtube.com/watch?v=i67Ub1b6o5w
 - **Try it with no camera and no key:** the [replay page](https://jonathansolvesproblems.github.io/unskipped/) plays back my real recorded reading through the same scoring code.
 - **Write-up:** [the blog post](https://jonathanandrei.com/blog/unskipped-beta-reader-page-flags-presage-smartspectra/) on how it works and what it measured.
+- **Agent session:** [agent-session/](agent-session/), three stretches of building this with an AI coding agent, cleaned for publishing.
 
 ## How to run it
 
