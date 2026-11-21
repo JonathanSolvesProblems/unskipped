@@ -362,12 +362,12 @@ function review(s, { replay = false } = {}) {
       }).join('')}
     </article>
     <section class="notes" aria-label="Notes on this reading">
-      <div class="slip note-slip" id="note"><h2>Select a flag</h2><p class="small">Each flag says what the camera saw on that paragraph and how sure it was.</p></div>
       ${replay ? '' : `
       <div class="send on-cloth">
         <button class="btn" id="send">Send the kept notes to the writer</button>
         <label><input type="checkbox" id="raw"> Also include the raw signal samples, for research. Off by default.</label>
       </div>`}
+      <div class="slip note-slip" id="note"><h2>Select a flag</h2><p class="small">Each flag says what the camera saw on that paragraph and how sure it was.</p></div>
     </section>
   </section>`;
   requestAnimationFrame(() => $('#annot').classList.add('reveal'));
@@ -392,6 +392,7 @@ function review(s, { replay = false } = {}) {
       <p class="ev">${esc([...ev, own].filter(Boolean).join(' '))}</p>
       ${replay ? '' : '<p class="ev">Click the flag again to drop this note, or to keep it.</p>'}`;
     $('#note').style.setProperty('--fc', FLAG[n.camera] ? `var(--f-${FLAG[n.camera]})` : 'transparent');
+    placeNote(i);
   };
   view.querySelectorAll('.annot .flag').forEach((b) => {
     b.onclick = () => {
@@ -409,6 +410,15 @@ function review(s, { replay = false } = {}) {
   view.querySelectorAll('.edge .slot').forEach((a) => {
     a.onclick = (e) => { e.preventDefault(); const i = Number(a.dataset.i); document.getElementById(`p${i}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); showNote(i); };
   });
+  // on wide screens the note sits level with its paragraph, like a margin note
+  function placeNote(i) {
+    const note = $('#note'), para = view.querySelector(`.annot .para[data-i="${i}"]`);
+    if (!note || !para) return;
+    if (!matchMedia('(min-width: 981px)').matches) { note.style.marginTop = ''; return; }
+    const send = view.querySelector('.notes .send');
+    const floor = send ? send.offsetHeight + 14 : 0;
+    note.style.marginTop = `${Math.max(0, para.offsetTop - floor)}px`;
+  }
   const first = scored.paragraphs.find((n) => FLAG[n.camera] && n.camera !== 'no-reading');
   if (first) showNote(first.i);
   if (replay) return;
@@ -503,7 +513,7 @@ async function replayBoot() {
       <div class="home-copy">
         <h1>${esc(title)}</h1>
         <p class="lede">${line}</p>
-        <div class="row"><a class="btn paper" href="https://github.com/JonathanSolvesProblems/unskipped">See the code and how to run it</a></div>
+        <div class="row"><a class="btn paper" href="https://github.com/JonathanSolvesProblems/unskipped">See the code and how to run it</a><a class="link" href="?mock=1">Walk through the screens with simulated signals</a></div>
       </div>
       ${samplePage()}
     </section>`;

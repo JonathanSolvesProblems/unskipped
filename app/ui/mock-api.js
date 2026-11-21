@@ -2,7 +2,7 @@
 // for layout review. Placeholder text and simulated signals; never used for any result.
 const filler = 'This placeholder paragraph stands in for a page of a manuscript so the layout can be checked without showing the story before it is read.';
 const ms = {
-  title: 'Layout check', byline: 'Placeholder text, simulated signals',
+  title: 'Sample chapter', byline: 'Placeholder text and simulated signals, to show the screens',
   paragraphs: Array.from({ length: 12 }, (_, i) => {
     const text = Array.from({ length: 1 + (i * 7) % 4 }, () => filler).join(' ');
     return { text, words: text.split(' ').length };
