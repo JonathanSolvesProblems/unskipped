@@ -16,3 +16,7 @@ What this means for the app:
 - Requesting the full cardio bundle produced no cardio packets at all on this setup; `PULSE_RATE` alone works. This matches open SDK issue #18.
 - The camera driver cannot lock exposure ("lock collapsed image brightness ... auto exposure stays active during the measurement on this hardware", SDK log), so lighting should stay constant during a reading.
 - Credits used for these four checks: about 6 of 100.
+
+## Windows Smart App Control (21 November 2026)
+
+The same laptop that ran the tests above refused to load the SDK on 21 November: `could not load packaged runtime ... smartspectra_capi.dll`. LoadLibraryExW returned Windows error 4551 (an Application Control policy blocked the file). Smart App Control had moved from evaluation to On by itself; the CodeIntegrity log has no events for the SDK before that morning, then event 3077 (blocked) for `smartspectra_capi.dll` and 3033 (signing level not met) for it and the bundled `vulkan-1.dll`. All four DLLs in `@smartspectra/node-sdk-win32-x64` 3.5.0 are unsigned; `opencv_world4100.dll` still loaded. Smart App Control has no per-file exception, so the fix was to turn it off. Signed DLLs from Presage would remove the problem for every Windows 11 user with it on.
