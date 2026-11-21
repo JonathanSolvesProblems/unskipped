@@ -199,7 +199,7 @@ def replay(browser, base):
         ("replay with no session", "?session=missing.json", "No recorded reading here yet"),
         ("replay with a bad file", "?session=../../package.json", "This recording could not be read"),
     ]:
-        for vw in (1280, 390):
+        for vw in (1280, 900, 390):
             errors = []
             page = browser.new_page(viewport={"width": vw, "height": 844 if vw == 390 else 720})
             watch(page, errors)
@@ -212,6 +212,16 @@ def replay(browser, base):
                 expect(page.locator(".verdict h1")).to_be_visible()
                 check(f"{label} at {vw}: 29 fore-edge slots", page.locator(".edge .slot").count() == 29)
                 check(f"{label} at {vw}: replay notice shown, no send button", page.locator("#send").count() == 0)
+                if vw < 981:
+                    # one column: the chapter keeps the width, and a tapped flag's note shows on screen
+                    aw = page.evaluate("document.querySelector('.annot').getBoundingClientRect().width")
+                    check(f"{label} at {vw}: chapter is full width", aw >= 0.8 * vw, f"chapter {aw:.0f}px")
+                    flag = page.locator(".annot .flag").nth(3)
+                    flag.scroll_into_view_if_needed()
+                    flag.click(force=True)
+                    page.wait_for_timeout(300)
+                    box = page.locator("#note").bounding_box()
+                    check(f"{label} at {vw}: tapped flag's note is on screen", box and box["y"] >= 0 and box["y"] + box["height"] <= page.viewport_size["height"] + 1, str(box))
             no_overflow(page, f"{label}")
             check(f"{label} at {vw}: no console errors", not errors, "; ".join(errors[:3]))
             page.close()

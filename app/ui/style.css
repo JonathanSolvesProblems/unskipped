@@ -462,8 +462,18 @@ table.files td:first-child { padding-left: 0; }
 /* ---------- round 8: defects from the last critic pass ---------- */
 .legend-row { margin-top: 26px; }
 /* one page width and one side column on read, marks and review */
-.review { grid-template-columns: minmax(0, 760px) 300px; }
+@media (min-width: 981px) { .review { grid-template-columns: minmax(0, 760px) 300px; } }
 .notes { position: relative; top: auto; }
+/* phones and narrow windows: one column, and the selected note is a sheet pinned to the bottom of
+   the screen, so tapping a flag shows its note without scrolling past the whole chapter */
+@media (max-width: 980px) {
+  .review { grid-template-columns: minmax(0, 1fr); }
+  .review #note { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 5; max-height: 38vh; overflow: auto; margin: 0; }
+  .review .annot { padding-bottom: 40vh; padding-right: 76px; }
+  .annot .para .flag { right: -64px; width: 70px; }
+  .annot .para .flag::before { width: 30px; }
+  .annot .para .flag::after { width: 40px; }
+}
 .note-slip { transition: margin-top .25s ease; }
 @media (prefers-reduced-motion: reduce) { .note-slip { transition: none; } }
 /* marks: labels clear of the card edge */
