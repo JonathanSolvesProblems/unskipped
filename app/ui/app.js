@@ -235,7 +235,7 @@ function read() {
   view.innerHTML = `<section class="reading">
     <article class="sheet page" id="page">
       <h1>${esc(s.title)}</h1>${s.byline ? `<div class="byline">${esc(s.byline)}</div>` : ''}
-      <p class="read-hint">Press <kbd>Space</kbd> or scroll for the next paragraph, <kbd>↑</kbd> to go back. Paragraphs ahead stay faded until you reach them.</p>
+      <p class="read-hint">Press <kbd>Space</kbd> or scroll for the next paragraph; scroll up or <kbd>↑</kbd> to go back. Paragraphs ahead stay faded until you reach them.</p>
       ${s.paragraphs.map((p, i) => `<p data-i="${i}" class="ahead">${esc(p.text)}</p>`).join('')}
     </article>${railHtml({ stop: true })}</section>`;
   window.scrollTo(0, 0);
@@ -258,18 +258,33 @@ function read() {
   const placeLine = () => { const r = page.getBoundingClientRect(); readline.style.left = `${r.left}px`; readline.style.width = `${r.width}px`; };
   placeLine(); window.onresize = placeLine;
   go(0);
+  // Inside a paragraph taller than the screen, scrolling moves through it normally; only at its
+  // edge does a scroll step to the next or previous paragraph.
+  const overflowsDown = () => paras[current].getBoundingClientRect().bottom > window.innerHeight - 24;
+  const overflowsUp = () => paras[current].getBoundingClientRect().top < window.innerHeight * 0.3;
+  const atEnd = () => { if (current === paras.length - 1) toast('That was the last paragraph. Press “I’ve finished” to mark what got you.', 4000); };
   let wheelAcc = 0, wheelLock = 0;
   const onWheel = (e) => {
+    if (e.deltaY > 0 && overflowsDown()) return; // native scroll within a long paragraph
+    if (e.deltaY < 0 && overflowsUp()) return;
     e.preventDefault();
     wheelAcc += e.deltaY;
-    if (Date.now() < wheelLock || Math.abs(wheelAcc) < 40) return;
-    go(current + (wheelAcc > 0 ? 1 : -1));
-    wheelAcc = 0; wheelLock = Date.now() + 450;
+    if (Date.now() < wheelLock || Math.abs(wheelAcc) < 30) return;
+    if (wheelAcc > 0) { atEnd(); go(current + 1); } else go(current - 1);
+    wheelAcc = 0; wheelLock = Date.now() + 320;
   };
   const onKey = (e) => {
     if (e.target.closest('button, input, select, a')) return;
-    if ([' ', 'ArrowDown', 'PageDown', 'j'].includes(e.key)) { e.preventDefault(); go(current + 1); }
-    if (['ArrowUp', 'PageUp', 'k'].includes(e.key)) { e.preventDefault(); go(current - 1); }
+    if ([' ', 'ArrowDown', 'PageDown', 'j'].includes(e.key)) {
+      e.preventDefault();
+      if (overflowsDown()) window.scrollBy({ top: window.innerHeight * 0.55, behavior: 'smooth' });
+      else { atEnd(); go(current + 1); }
+    }
+    if (['ArrowUp', 'PageUp', 'k'].includes(e.key)) {
+      e.preventDefault();
+      if (overflowsUp()) window.scrollBy({ top: -window.innerHeight * 0.55, behavior: 'smooth' });
+      else go(current - 1);
+    }
   };
   window.addEventListener('wheel', onWheel, { passive: false });
   window.addEventListener('keydown', onKey);
@@ -290,19 +305,22 @@ function marks() {
   const state = new Map();
   view.innerHTML = `<section class="marks-wrap">
     <div class="marks-head"><h1>Your marks first</h1>
-    <p class="lede">Before you see any flag: click the paragraphs that got you, and click twice for any that lost you.</p></div>
+    <p class="lede"><b>Click every paragraph that got you</b>: funny, tense, or made you want to keep going. Click twice for any that lost you. Save unlocks once you have marked one.</p></div>
     <article class="sheet markable">${s.paragraphs.map((p, i) => `<p data-i="${i}" tabindex="0" role="button" aria-pressed="false">${esc(p.text)}<span class="vh mark-state"></span></p>`).join('')}</article>
     <section class="marks-side on-cloth" aria-label="Your marks">
       <p class="count" id="count"></p>
       <div class="mark-key"><span class="mk got">got me</span><span>one click</span><span class="mk lost">lost me</span><span>two clicks</span></div>
-      <button class="btn" id="save">Save my marks and show the flags</button>
+      <button class="btn" id="save" disabled>Save my marks and show the flags</button>
+      <button class="link" id="none">Nothing got me or lost me</button>
       <p class="small">The camera’s flags appear only after you save.</p>
     </section>
   </section>`;
   const count = () => {
     const g = [...state.values()].filter((v) => v === 'got').length, l = [...state.values()].filter((v) => v === 'lost').length;
     $('#count').textContent = `${g} got me, ${l} lost me`;
+    $('#save').disabled = !state.size;
   };
+  if (document.activeElement) document.activeElement.blur(); // a held Space from reading must not press anything here
   view.querySelectorAll('.markable p').forEach((el) => {
     const cycle = () => {
       const i = Number(el.dataset.i);
@@ -317,15 +335,11 @@ function marks() {
     el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycle(); } };
   });
   count();
-  let askedEmpty = false;
-  $('#save').onclick = async () => {
-    // marks are the grader; ask once before saving none, so a reader does not skip them by accident
-    if (!state.size && !askedEmpty) {
-      askedEmpty = true;
-      $('#count').textContent = 'Nothing marked yet';
-      toast('Click the paragraphs that got you first. Press Save again to continue without marks.', 5000);
-      return;
-    }
+  // marks are the grader: Save stays locked until one is made, and saving none is its own,
+  // deliberate choice rather than something a reader can do by pressing Space
+  $('#none').onclick = () => { if (confirm('Save with no marks? The camera will have nothing to be graded against.')) save(); };
+  $('#save').onclick = () => save();
+  const save = async () => {
     s.marks = {
       savedAt: new Date().toISOString(),
       got: [...state].filter(([, v]) => v === 'got').map(([i]) => i).sort((a, b) => a - b),

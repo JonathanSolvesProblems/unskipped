@@ -92,9 +92,11 @@ def reader_flow(browser, base):
     check("read: rail shows a pulse", "bpm" in page.locator("#readout").inner_text())
     page.click("#done")
     expect(page.locator("h1")).to_contain_text("Your marks first")
-    page.click("#save")
+    check("marks: save locked until something is marked", page.locator("#save").is_disabled())
+    page.keyboard.press("Space")
+    page.keyboard.press("Space")
     page.wait_for_timeout(300)
-    check("marks: saving with nothing marked asks first", page.locator("h1").inner_text().startswith("Your marks first"))
+    check("marks: Space does not skip the marks", page.locator("h1").inner_text().startswith("Your marks first"))
     page.click(".markable p[data-i='0']")
     page.click(".markable p[data-i='3']")
     page.click(".markable p[data-i='3']")
@@ -141,6 +143,23 @@ def reader_flow(browser, base):
     exp = page.evaluate("window.__exported")
     check("writer: one summary comment plus one per kept note", len(exp["comments"]) == len(saved["notes"]) + 1)
     check("reader and writer flow: no console errors", not errors, "; ".join(errors[:3]))
+    page.close()
+
+
+def long_paragraph(browser, base):
+    # a window short enough that paragraph 2 (four sentences) runs past the bottom edge
+    page = browser.new_page(viewport={"width": 1280, "height": 360})
+    page.goto(base + "app/ui/index.html?mock=1&screen=read")
+    page.wait_for_selector("#page p[data-i]", timeout=15000)
+    page.keyboard.press("Space")
+    page.wait_for_timeout(700)
+    overflow = page.evaluate("document.querySelector('#page p.focus').getBoundingClientRect().bottom > innerHeight - 24")
+    y0 = page.evaluate("scrollY")
+    page.mouse.wheel(0, 120)
+    page.wait_for_timeout(500)
+    check("read: a long paragraph overflows the short window (test setup)", overflow)
+    check("read: scrolling inside a long paragraph stays on it", page.locator("#page p.focus").get_attribute("data-i") == "1")
+    check("read: and scrolls the text", page.evaluate("scrollY") > y0)
     page.close()
 
 
@@ -218,6 +237,7 @@ def main():
         browser = p.chromium.launch()
         reader_flow(browser, base)
         stop_while_reading(browser, base)
+        long_paragraph(browser, base)
         replay(browser, base)
         if "--live" in sys.argv:
             live(browser)
