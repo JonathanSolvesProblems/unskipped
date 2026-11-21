@@ -9,7 +9,9 @@
   b05-flags        the live replay page: the graded read's flags opening their notes
   b06-noreading     the live replay page with the second controls session: a "no reading" note
 """
+import json
 import shutil
+import time
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
@@ -19,19 +21,26 @@ OUT = ROOT / "broll"
 TMP = ROOT / "tmp" / "pw-video"
 LIVE = "https://jonathansolvesproblems.github.io/unskipped/app/ui/"
 SIZE = {"width": 1920, "height": 1080}
+STARTS = OUT / "_clip_starts.json"
 
 
 def record(browser, name, run, view=None):
     # a smaller viewport recorded at 1920x1080 makes the text larger on screen
     TMP.mkdir(parents=True, exist_ok=True)
     ctx = browser.new_context(viewport=view or SIZE, record_video_dir=str(TMP), record_video_size=view or SIZE)
+    t0 = time.monotonic()
     page = ctx.new_page()
-    run(page)
+    ready = run(page)
     video = page.video
     ctx.close()
     dest = OUT / f"{name}.webm"
     shutil.move(video.path(), dest)
-    print("ok", dest.name)
+    # where the shot is ready (page framed, nothing loading), so the edit can start there
+    if ready is not None:
+        starts = json.loads(STARTS.read_text()) if STARTS.exists() else {}
+        starts[name] = round(ready - t0 + 0.3, 2)
+        STARTS.write_text(json.dumps(starts, indent=1))
+    print("ok", dest.name, f"ready at {ready - t0:.1f}s" if ready else "")
 
 
 def smooth_to(page, selector_js, offset=0.35, ms=1600):
@@ -46,8 +55,9 @@ def smooth_to(page, selector_js, offset=0.35, ms=1600):
     page.wait_for_timeout(ms + 200)
 
 
-def source_page(url, pattern, zoom=1.55, hold=4200):
-    """Open a cited source, highlight the passage the narration relies on, and glide to it."""
+def source_page(url, pattern, zoom=1.55, hold=8000):
+    """Open a cited source framed on its headline and the highlighted passage the narration
+    relies on, then drift slowly, so the viewer can read it instead of watching a page scroll."""
     def run(page):
         # keep cookie dialogs, newsletter pop-ups and shop pills off the page for the whole clip,
         # including ones that appear late; the article text itself is never touched
@@ -65,24 +75,40 @@ def source_page(url, pattern, zoom=1.55, hold=4200):
         page.goto(url, wait_until="domcontentloaded", timeout=60000)
         page.wait_for_timeout(3000)
         # mark the passage, the way a reader would underline it
-        found = page.evaluate("""(src) => { const re = new RegExp(src, 'i');
-            const p = [...document.querySelectorAll('p, li, blockquote, dd')].find((x) => re.test(x.textContent) && x.offsetParent && !x.closest('.modal'));
-            if (!p) return false;
-            p.style.background = 'rgba(255,224,58,.45)'; p.style.outline = '6px solid rgba(255,224,58,.45)'; p.id = 'mark-quote'; p.style.fontSize = '1.15em';
-            return true; }""", pattern)
+        found = page.evaluate("""(srcs) => { let n = 0;
+            for (const src of srcs) { const re = new RegExp(src, 'i');
+              const p = [...document.querySelectorAll('p, li, blockquote, dd')].find((x) => re.test(x.textContent) && x.offsetParent && !x.closest('.modal'));
+              if (!p) return false;
+              p.style.background = 'rgba(255,224,58,.45)'; p.style.outline = '6px solid rgba(255,224,58,.45)'; p.style.fontSize = '1.15em';
+              p.id = n++ ? 'mark-quote-end' : 'mark-quote'; }
+            return true; }""", [pattern] if isinstance(pattern, str) else pattern)
         if not found:
             raise SystemExit(f"passage not found on {url}: {pattern}")
         page.evaluate(f"document.body.style.zoom = '{zoom}'")
         page.wait_for_timeout(600)
-        smooth_to(page, "document.getElementById('mark-quote')", 0.35, 2200)
+        # frame the nearest heading above the passage too (title, date, section), when both fit
+        page.evaluate("""() => {
+            const q = document.getElementById('mark-quote'), q2 = document.getElementById('mark-quote-end') || q, top = (el) => el.getBoundingClientRect().top + scrollY;
+            const heads = [...document.querySelectorAll('h1, h2, h3')].filter((h) => h.offsetParent &&
+                (h.compareDocumentPosition(q) & Node.DOCUMENT_POSITION_FOLLOWING));
+            const h = heads[heads.length - 1];
+            const qBottom = top(q2) + q2.getBoundingClientRect().height;
+            const y = h && qBottom - top(h) < innerHeight * 0.8 ? top(h) - innerHeight * 0.08 : top(q) - innerHeight * 0.3;
+            scrollTo(0, Math.max(0, y)); }""")
+        page.wait_for_timeout(1200)
+        ready = time.monotonic()
+        page.evaluate(f"""() => {{ const y0 = scrollY, t0 = performance.now();
+            const step = (t) => {{ const k = Math.min(1, (t - t0) / {hold}); scrollTo(0, y0 + 50 * k); if (k < 1) requestAnimationFrame(step); }};
+            requestAnimationFrame(step); }}""")
         page.wait_for_timeout(hold)
+        return ready
     return run
 
 
-source_beta = source_page("https://indiesunlimited.com/2014/05/27/open-letter-to-beta-readers/", "I liked it")
+source_beta = source_page("https://indiesunlimited.com/2014/05/27/open-letter-to-beta-readers/", ["I liked it", "tells me nothing"], 1.35)
 source_leonard = source_page("https://quoteinvestigator.com/2017/11/14/skip/", "leave out the part that readers tend to skip")
 source_blink = source_page("https://www.sciencedaily.com/releases/2010/04/100429153959.htm", "blinked more")
-source_telemetry = source_page("https://smartspectra.presagetech.com/docs/telemetry-and-privacy", "transmits nothing", 1.4)
+source_telemetry = source_page("https://smartspectra.presagetech.com/docs/telemetry-and-privacy", "transmits nothing", 1.9)
 
 
 def flags(page):
