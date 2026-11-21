@@ -235,7 +235,7 @@ function read() {
   view.innerHTML = `<section class="reading">
     <article class="sheet page" id="page">
       <h1>${esc(s.title)}</h1>${s.byline ? `<div class="byline">${esc(s.byline)}</div>` : ''}
-      <p class="read-hint">Press <kbd>Space</kbd> or scroll for the next paragraph; scroll up or <kbd>↑</kbd> to go back. Paragraphs ahead stay faded until you reach them.</p>
+      <p class="read-hint">Press <kbd>Space</kbd> or scroll to start, and again for each next paragraph; scroll up or <kbd>↑</kbd> to go back. Paragraphs ahead stay faded until you reach them.</p>
       ${s.paragraphs.map((p, i) => `<p data-i="${i}" class="ahead">${esc(p.text)}</p>`).join('')}
     </article>${railHtml({ stop: true })}</section>`;
   window.scrollTo(0, 0);
@@ -244,55 +244,63 @@ function read() {
   // Guided reading: the app moves one paragraph at a time, so it always knows which paragraph is
   // being read. A pilot read with free scrolling credited a whole screenful of reading to the one
   // paragraph that happened to sit on the reading line.
-  let current = -1;
+  // current: -1 before the first paragraph (reading the title and the hint), paras.length after the
+  // last; both record -1 on the timeline, so neither the title nor the wait before "I've finished"
+  // is credited to a paragraph (the scorer skips -1).
+  let current = -1, left = false;
+  const N = paras.length;
   const go = (i) => {
-    i = Math.max(0, Math.min(paras.length - 1, i));
+    if (left) return;
+    i = Math.max(0, Math.min(N, i));
     if (i === current) return;
     current = i;
     paras.forEach((el, k) => { el.classList.toggle('past', k < i); el.classList.toggle('focus', k === i); el.classList.toggle('ahead', k > i); });
-    const r = paras[i].getBoundingClientRect();
-    window.scrollTo({ top: window.scrollY + r.top - window.innerHeight * 0.34, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-    s.timeline.push({ t: now(), p: i });
+    if (i < N) {
+      const r = paras[i].getBoundingClientRect();
+      window.scrollTo({ top: window.scrollY + r.top - window.innerHeight * 0.34, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    } else toast('That was the last paragraph. Press “I’ve finished” to mark what got you.', 4000);
+    s.timeline.push({ t: now(), p: i < N ? i : -1 });
   };
   const page = $('#page');
   const placeLine = () => { const r = page.getBoundingClientRect(); readline.style.left = `${r.left}px`; readline.style.width = `${r.width}px`; };
   placeLine(); window.onresize = placeLine;
-  go(0);
   // Inside a paragraph taller than the screen, scrolling moves through it normally; only at its
   // edge does a scroll step to the next or previous paragraph.
-  const overflowsDown = () => paras[current].getBoundingClientRect().bottom > window.innerHeight - 24;
-  const overflowsUp = () => paras[current].getBoundingClientRect().top < window.innerHeight * 0.3;
-  const atEnd = () => { if (current === paras.length - 1) toast('That was the last paragraph. Press “I’ve finished” to mark what got you.', 4000); };
+  const reading = () => current >= 0 && current < N;
+  const overflowsDown = () => reading() && paras[current].getBoundingClientRect().bottom > window.innerHeight - 24;
+  const overflowsUp = () => reading() && paras[current].getBoundingClientRect().top < window.innerHeight * 0.3;
+  // One gesture is one step: while a step is settling, further wheel events (trackpad momentum,
+  // a long flick) are absorbed and extend the lock, so a new step needs a pause.
   let wheelAcc = 0, wheelLock = 0;
   const onWheel = (e) => {
+    if (Date.now() < wheelLock) { e.preventDefault(); wheelAcc = 0; wheelLock = Date.now() + 200; return; }
     if (e.deltaY > 0 && overflowsDown()) return; // native scroll within a long paragraph
     if (e.deltaY < 0 && overflowsUp()) return;
     e.preventDefault();
     wheelAcc += e.deltaY;
-    if (Date.now() < wheelLock || Math.abs(wheelAcc) < 30) return;
-    if (wheelAcc > 0) { atEnd(); go(current + 1); } else go(current - 1);
-    wheelAcc = 0; wheelLock = Date.now() + 320;
+    if (Math.abs(wheelAcc) < 30) return;
+    go(current + (wheelAcc > 0 ? 1 : -1));
+    wheelAcc = 0; wheelLock = Date.now() + 450;
   };
   const onKey = (e) => {
-    if (e.target.closest('button, input, select, a')) return;
-    if ([' ', 'ArrowDown', 'PageDown', 'j'].includes(e.key)) {
-      e.preventDefault();
-      if (overflowsDown()) window.scrollBy({ top: window.innerHeight * 0.55, behavior: 'smooth' });
-      else { atEnd(); go(current + 1); }
-    }
-    if (['ArrowUp', 'PageUp', 'k'].includes(e.key)) {
-      e.preventDefault();
-      if (overflowsUp()) window.scrollBy({ top: -window.innerHeight * 0.55, behavior: 'smooth' });
-      else go(current - 1);
-    }
+    if (e.target.closest('input, select, a')) return;
+    const down = [' ', 'ArrowDown', 'PageDown', 'j'].includes(e.key), up = ['ArrowUp', 'PageUp', 'k'].includes(e.key);
+    if (!down && !up) return;
+    e.preventDefault();
+    // Space must never press a focused button (such as "I've finished"), and a held key must not race
+    if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
+    if (e.repeat) return;
+    if (down) { if (overflowsDown()) window.scrollBy({ top: window.innerHeight * 0.55, behavior: 'smooth' }); else go(current + 1); }
+    if (up) { if (overflowsUp()) window.scrollBy({ top: -window.innerHeight * 0.55, behavior: 'smooth' }); else go(current - 1); }
   };
   window.addEventListener('wheel', onWheel, { passive: false });
   window.addEventListener('keydown', onKey);
   paras.forEach((el, k) => { el.onclick = () => go(k); });
-  const leave = () => { window.removeEventListener('wheel', onWheel); window.removeEventListener('keydown', onKey); window.onresize = null; };
+  const leave = () => { left = true; window.removeEventListener('wheel', onWheel); window.removeEventListener('keydown', onKey); window.onresize = null; };
   S.railTimer = setInterval(paintRail, 500);
-  $('#done').onclick = async () => { s.readEnd = now(); leave(); await stopLive(); marks(); };
+  $('#done').onclick = async () => { if (left) return; s.readEnd = now(); leave(); await stopLive(); marks(); };
   $('#quit').onclick = async () => {
+    if (left) return;
     leave(); await stopLive(); S.session = null;
     toast('Stopped. The camera is off and nothing was sent.'); home();
   };
@@ -337,7 +345,7 @@ function marks() {
   count();
   // marks are the grader: Save stays locked until one is made, and saving none is its own,
   // deliberate choice rather than something a reader can do by pressing Space
-  $('#none').onclick = () => { if (confirm('Save with no marks? The camera will have nothing to be graded against.')) save(); };
+  $('#none').onclick = () => { if (confirm('Save with no marks? The camera will have nothing to be graded against.')) { state.clear(); save(); } };
   $('#save').onclick = () => save();
   const save = async () => {
     s.marks = {
@@ -426,6 +434,7 @@ function review(s, { replay = false } = {}) {
       ${replay ? '' : '<p class="ev">Click the flag again to drop this note, or to keep it.</p>'}`;
     $('#note').style.setProperty('--fc', FLAG[n.camera] ? `var(--f-${FLAG[n.camera]})` : 'transparent');
     placeNote(i);
+    window.onresize = () => placeNote(i);
   };
   view.querySelectorAll('.annot .flag').forEach((b) => {
     b.onclick = () => {

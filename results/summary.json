@@ -19,18 +19,12 @@
  "sessions": {
   "controls1": {
    "title": "The Open Window",
-   "reader": {
-    "blinkPerMin": 0,
-    "pulseMedian": 79.8,
-    "breathMedian": null,
-    "hrvMedian": null,
-    "msPerWord": 280,
-    "readableShare": 0.11
-   },
+   "readerName": "jonathansolvesproblems",
    "paragraphs": 29,
    "readMinutes": 5,
    "marksSavedAt": "2026-11-21T20:02:35.755Z",
    "reviewOpenedAt": null,
+   "reviewSentAt": "2026-11-21T20:02:44.315Z",
    "marked": {
     "got": [
      13,
@@ -193,6 +187,14 @@
    "notes": {
     "no-reading": 27,
     "brief": 2
+   },
+   "reader": {
+    "blinkPerMin": 0,
+    "pulseMedian": 79.8,
+    "breathMedian": null,
+    "hrvMedian": null,
+    "msPerWord": 280,
+    "readableShare": 0.11
    },
    "confidentPulseSamples": 349,
    "medianFps": 30,
@@ -462,18 +464,12 @@
   },
   "graded": {
    "title": "The Open Window",
-   "reader": {
-    "blinkPerMin": 15.5,
-    "pulseMedian": 81.6,
-    "breathMedian": null,
-    "hrvMedian": null,
-    "msPerWord": 343,
-    "readableShare": 0.98
-   },
+   "readerName": "jonathansolvesproblems",
    "paragraphs": 29,
    "readMinutes": 8.2,
    "marksSavedAt": "2026-11-21T19:40:39.481Z",
    "reviewOpenedAt": null,
+   "reviewSentAt": "2026-11-21T19:41:07.977Z",
    "marked": {
     "got": [
      1,
@@ -530,6 +526,14 @@
     "gripped": 8,
     "brief": 5,
     "amused": 1
+   },
+   "reader": {
+    "blinkPerMin": 15.5,
+    "pulseMedian": 81.6,
+    "breathMedian": null,
+    "hrvMedian": null,
+    "msPerWord": 343,
+    "readableShare": 0.98
    },
    "confidentPulseSamples": 649,
    "medianFps": 30,

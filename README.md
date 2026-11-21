@@ -55,7 +55,7 @@ npm run check   # results, then fail if any number in post/devto.md disagrees wi
 
 ## How it decides
 
-`src/score.js` holds every threshold (`THRESHOLDS`), fixed before the graded read; `results/controls.md` lists the pre-registered planted cases and any later change. In short: pulse readings are credited to the paragraph read about 6 seconds earlier (the SDK's pulse is a ~12 second average); a paragraph 4 bpm over the reader's own median, or with blinking under 60% of their own rate, is pink; a smile held 0.7 s is yellow; blinking over 160% of their rate is blue; a paragraph where the SDK reported no forward face, or the reader talked, for most of its time is clear. `results/sdk-notes.md` records what the first camera tests showed (pulse needs the chest in frame; `PULSE_RATE` alone works where the full cardio bundle returned nothing).
+`src/score.js` holds every threshold (`THRESHOLDS`), fixed before the graded read except the head-turn bars, added afterwards for looking-away (the graded read has no head data, so its result is unaffected); `results/controls.md` lists the pre-registered planted cases and any later change. In short: pulse readings are credited to the paragraph read about 6 seconds earlier (the SDK's pulse is a ~12 second average); a paragraph 4 bpm over the reader's own median, or with blinking under 60% of their own rate, is pink; a smile held 0.7 s is yellow; blinking over 160% of their rate is blue; a paragraph where the SDK reported no forward face, or the reader talked, for most of its time is clear. `results/sdk-notes.md` records what the first camera tests showed (pulse needs the chest in frame; `PULSE_RATE` alone works where the full cardio bundle returned nothing).
 
 ## Privacy
 
