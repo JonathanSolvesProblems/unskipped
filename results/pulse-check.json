@@ -1,6 +1,7 @@
 {
  "generatedBy": "tools/pulse-check.js",
  "confidentCameraReadings": 183,
+ "restingSdBpm": 3.5,
  "offsetS": 6.04,
  "pairs": 29,
  "meanAbsDiff": 1,

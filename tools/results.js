@@ -82,6 +82,8 @@ for (const f of files) {
     notes: counts,
     reader: scored.reader,
     confidentPulseSamples: pulses,
+    // share of the SDK's talking detections that were 'talking' during the read (a check on the SDK, not scored)
+    talkingPct: (() => { const seen = new Map(); for (const e of s.events) if (e.kind === 'sample') for (const d of e.s.talk || []) if (!seen.has(d.ts)) seen.set(d.ts, { on: d.on, t: d.t ?? e.t }); const l = [...seen.values()].filter((d) => d.t >= s.readStart && d.t <= s.readEnd); return l.length ? Math.round((100 * l.filter((d) => d.on).length) / l.length) : null; })(),
     medianFps: fps.length ? fps.sort((a, b) => a - b)[fps.length >> 1] : null,
     perParagraph: scored.paragraphs.map((n) => ({ i: n.i, camera: n.camera, dwell: n.dwell, reason: n.reason, evidence: n.evidence })),
   };

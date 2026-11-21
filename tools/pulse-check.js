@@ -47,7 +47,10 @@ const main = compare(baseOffset);
 // the phone may start recording up to a couple of seconds after the tap; show the result is not
 // sensitive to that
 const sensitivity = [-2, 2].map((d) => { const r = compare(baseOffset + d); return { shiftS: d, meanAbsDiff: r.meanAbsDiff, meanDiff: r.meanDiff }; });
-const out = { generatedBy: 'tools/pulse-check.js', confidentCameraReadings: confident.length, ...main, sensitivity };
+// resting wander: standard deviation of the camera's confident readings around their median (no reading happening)
+const restMed = [...confident.map((r) => r.bpm)].sort((x, y) => x - y)[confident.length >> 1];
+const restSd = Math.round(Math.sqrt(confident.reduce((a, r) => a + (r.bpm - restMed) ** 2, 0) / confident.length) * 10) / 10;
+const out = { generatedBy: 'tools/pulse-check.js', confidentCameraReadings: confident.length, restingSdBpm: restSd, ...main, sensitivity };
 fs.writeFileSync('results/pulse-check.json', JSON.stringify(out, null, 1));
 console.log(`${main.pairs} paired readings. Sensor mean ${main.sensorMean} bpm, camera mean ${main.cameraMean} bpm.`);
 console.log(`Camera minus sensor: mean ${main.meanDiff} bpm, mean absolute ${main.meanAbsDiff} bpm, largest ${main.maxAbsDiff} bpm; ${main.within5} of ${main.pairs} within 5 bpm.`);

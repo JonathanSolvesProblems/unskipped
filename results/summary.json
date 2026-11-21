@@ -197,6 +197,7 @@
     "readableShare": 0.11
    },
    "confidentPulseSamples": 349,
+   "talkingPct": 89,
    "medianFps": 30,
    "perParagraph": [
     {
@@ -536,6 +537,7 @@
     "readableShare": 0.98
    },
    "confidentPulseSamples": 649,
+   "talkingPct": 1,
    "medianFps": 30,
    "perParagraph": [
     {

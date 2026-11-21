@@ -28,5 +28,11 @@
    "smiledPct": 0
   }
  ],
- "maxFalseGrippedPct": 22.3
+ "maxFalseGrippedPct": 22.3,
+ "pulseBars": {
+  "bpm4": 21.5,
+  "bpm6": 16.2,
+  "bpm8": 6.5,
+  "bpm10": 5.1
+ }
 }

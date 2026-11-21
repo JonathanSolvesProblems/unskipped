@@ -8,7 +8,7 @@
 // Writes results/null-check.json.
 // Only paragraph word counts are taken from the story; no text is printed.
 import fs from 'node:fs';
-import { scoreSession } from '../src/score.js';
+import { scoreSession, THRESHOLDS } from '../src/score.js';
 
 const blocks = fs.readFileSync('stories/the-open-window.md', 'utf8').replace(/\r/g, '').split(/\n\s*\n/)
   .map((b) => b.trim()).filter((b) => b && !/^#\s/.test(b) && !/^_.*_$/.test(b));
@@ -18,7 +18,7 @@ const REST = JSON.parse(fs.readFileSync('results/pulse-check-camera.json', 'utf8
   .filter((x) => x.confidence >= 40).map((x) => ({ t: x.t, bpm: x.bpm }));
 const REST_SPAN = REST[REST.length - 1].t - REST[0].t;
 
-function simulate(blinksPerMin, seed) {
+function simulate(blinksPerMin, seed, th = THRESHOLDS) {
   let r = seed;
   const rnd = () => ((r = (r * 1664525 + 1013904223) % 4294967296) / 4294967296);
   // pulse: a real resting pulse, not a flat line. The camera's own readings from the oximeter check
@@ -42,7 +42,7 @@ function simulate(blinksPerMin, seed) {
       expr: { happy: rnd() * 30 }, face: true,
     } });
   }
-  const scored = scoreSession({ paragraphs: words.map((w) => ({ words: w })), timeline, events, readStart: 2000, readEnd: end });
+  const scored = scoreSession({ paragraphs: words.map((w) => ({ words: w })), timeline, events, readStart: 2000, readEnd: end }, th);
   const share = (c) => scored.paragraphs.filter((n) => n.camera === c).length / words.length;
   return { gripped: share('gripped'), drifting: share('drifting'), amused: share('amused') };
 }
@@ -56,6 +56,14 @@ for (const bpm of [6, 10, 15, 20]) {
   console.log(`${bpm} blinks a minute: gripped ${row.grippedPct}%, drifting ${row.driftingPct}%, smiled ${row.smiledPct}% of paragraphs (all false)`);
 }
 out.maxFalseGrippedPct = Math.max(...out.rates.map((r) => r.grippedPct));
+// what a higher pulse bar would do for the same no-reaction reader (15 blinks a minute); exploratory,
+// for choosing the next threshold, not applied to any recorded read
+out.pulseBars = {};
+for (const bar of [4, 6, 8, 10]) {
+  const runs = Array.from({ length: 200 }, (_, i) => simulate(15, i + 1, { ...THRESHOLDS, pulseRiseBpm: bar }));
+  out.pulseBars[`bpm${bar}`] = Math.round((runs.reduce((a, x) => a + x.gripped, 0) / runs.length) * 1000) / 10;
+}
+console.log(`pulse bar sweep at 15 blinks a minute, false gripped %: ${JSON.stringify(out.pulseBars)}`);
 fs.mkdirSync('results', { recursive: true });
 fs.writeFileSync('results/null-check.json', JSON.stringify(out, null, 1));
 console.log('-> results/null-check.json');
